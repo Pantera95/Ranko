@@ -1,9 +1,8 @@
-import { Bell } from "lucide-react";
-
 import { auth } from "@/auth";
 import { AdminMobileMenu } from "@/components/layout/AdminMobileMenu";
 import { AdminSearch } from "@/components/layout/AdminSearch";
 import { AdminSidebar } from "@/components/layout/AdminSidebar";
+import { NotificationsButton } from "@/components/layout/NotificationsButton";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 
 export default async function AdminLayout({
@@ -45,18 +44,7 @@ export default async function AdminLayout({
             </div>
             <AdminSearch />
             <ThemeToggle />
-            <button
-              aria-label="Ver notificaciones"
-              className="grid h-10 w-10 place-items-center border transition"
-              style={{
-                background: "var(--bg-input)",
-                borderColor: "var(--border)",
-                color: "var(--text-secondary)",
-              }}
-              type="button"
-            >
-              <Bell size={18} />
-            </button>
+            <NotificationsButton />
           </div>
         </header>
         {children}

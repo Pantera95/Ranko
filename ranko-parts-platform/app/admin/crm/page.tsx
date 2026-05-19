@@ -1,3 +1,4 @@
+import { NuevoLeadModal } from "@/components/admin/NuevoLeadModal";
 import { PipelineKanban } from "@/components/crm/PipelineKanban";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { getCrmPipelineData } from "@/lib/crm";
@@ -8,10 +9,15 @@ export default async function CrmPage() {
   return (
     <main className="p-4 sm:p-6" style={{ color: "var(--text-primary)" }}>
       <section className="mx-auto max-w-[1800px]">
-        <p className="text-sm font-bold uppercase tracking-[0.18em]" style={{ color: "var(--color-gold)" }}>
-          Ventas
-        </p>
-        <h1 className="mt-3 text-4xl font-black uppercase">CRM / Pipeline</h1>
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="text-sm font-bold uppercase tracking-[0.18em]" style={{ color: "var(--color-gold)" }}>
+              Ventas
+            </p>
+            <h1 className="mt-3 text-4xl font-black uppercase">CRM / Pipeline</h1>
+          </div>
+          <NuevoLeadModal />
+        </div>
         <p className="mt-3 max-w-3xl leading-7" style={{ color: "var(--text-secondary)" }}>
           Gestiona leads publicos, oportunidades B2B, cotizaciones y recompras desde un flujo
           visual por etapas.
