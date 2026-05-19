@@ -1,4 +1,5 @@
 import { auth } from "@/auth";
+import { CopyButton } from "@/components/public/CopyButton";
 import { getClientPortalData } from "@/lib/client-portal";
 
 export default async function ClientePage() {
@@ -71,15 +72,20 @@ export default async function ClientePage() {
             style={{ border: "1px solid var(--border)", background: "var(--bg-card)" }}
           >
             <h2 className="text-xl font-black uppercase">Codigo de referido</h2>
-            <p
-              className="mt-4 p-4 font-mono text-2xl font-black"
-              style={{
-                border: "1px dashed var(--border)",
-                background: "var(--bg-elevated)",
-              }}
-            >
-              {portal.codigoReferido ?? "PENDIENTE"}
-            </p>
+            <div className="mt-4 flex items-center gap-3">
+              <p
+                className="flex-1 p-4 font-mono text-2xl font-black"
+                style={{
+                  border: "1px dashed var(--border)",
+                  background: "var(--bg-elevated)",
+                }}
+              >
+                {portal.codigoReferido ?? "PENDIENTE"}
+              </p>
+              {portal.codigoReferido && (
+                <CopyButton text={portal.codigoReferido} />
+              )}
+            </div>
             <p className="mt-3 text-sm leading-6" style={{ color: "var(--text-secondary)" }}>
               Comparte este codigo con talleres o distribuidores para acumular beneficios comerciales.
             </p>

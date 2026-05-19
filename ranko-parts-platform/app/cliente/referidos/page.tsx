@@ -1,6 +1,7 @@
-import { Copy, Share2, Users } from "lucide-react";
+import { Share2, Users } from "lucide-react";
 
 import { auth } from "@/auth";
+import { CopyButton } from "@/components/public/CopyButton";
 import { getClienteReferidos } from "@/lib/client-sections";
 import { cn } from "@/lib/utils";
 
@@ -68,19 +69,7 @@ export default async function ClienteReferidosPage() {
                   >
                     {data.codigoReferido}
                   </p>
-                  <button
-                    aria-label="Copiar codigo"
-                    className="inline-flex size-12 items-center justify-center transition"
-                    id="copy-btn"
-                    style={{
-                      border: "1px solid var(--border)",
-                      background: "var(--bg-elevated)",
-                      color: "var(--text-muted)",
-                    }}
-                    type="button"
-                  >
-                    <Copy size={18} />
-                  </button>
+                  <CopyButton text={data.codigoReferido} />
                 </div>
 
                 <p className="mt-4 text-sm leading-6" style={{ color: "var(--text-muted)" }}>
