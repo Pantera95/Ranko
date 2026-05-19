@@ -1,6 +1,7 @@
 import { Car, CreditCard, MapPin, Phone, User } from "lucide-react";
 
 import { auth } from "@/auth";
+import { CopyButton } from "@/components/public/CopyButton";
 import { getClientePerfil } from "@/lib/client-sections";
 import { cn } from "@/lib/utils";
 
@@ -156,15 +157,18 @@ export default async function ClientePerfilPage() {
                   style={{ borderTop: "1px solid var(--border)" }}
                 >
                   <p className="text-xs font-bold uppercase" style={{ color: "var(--text-muted)" }}>Codigo de referido</p>
-                  <p
-                    className="mt-2 px-4 py-3 font-mono text-xl font-black"
-                    style={{
-                      border: "1px dashed var(--border)",
-                      background: "var(--bg-elevated)",
-                    }}
-                  >
-                    {perfil.codigoReferido}
-                  </p>
+                  <div className="mt-2 flex items-center gap-3">
+                    <p
+                      className="flex-1 px-4 py-3 font-mono text-xl font-black"
+                      style={{
+                        border: "1px dashed var(--border)",
+                        background: "var(--bg-elevated)",
+                      }}
+                    >
+                      {perfil.codigoReferido}
+                    </p>
+                    <CopyButton text={perfil.codigoReferido} />
+                  </div>
                 </div>
               ) : null}
             </div>
