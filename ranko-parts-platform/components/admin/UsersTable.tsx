@@ -4,7 +4,7 @@ import { Shield, ToggleLeft, ToggleRight } from "lucide-react";
 import { useState } from "react";
 
 import type { UsuarioRow } from "@/lib/usuarios-admin";
-import { ROL_LABELS, ROL_STYLES, PERMISOS_ROL } from "@/lib/usuarios-admin";
+import { ROL_LABELS, ROL_STYLES, PERMISOS_ROL } from "@/lib/roles";
 import { cn } from "@/lib/utils";
 
 export function UsersTable({ initialUsers }: { initialUsers: UsuarioRow[] }) {

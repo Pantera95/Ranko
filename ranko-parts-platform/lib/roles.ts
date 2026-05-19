@@ -48,6 +48,26 @@ export const PERMISOS_ROL: Record<RolEquipo, { descripcion: string; puede: strin
   },
 };
 
+// ─── Rol labels & styles (safe for client components — no DB imports) ─────────
+
+export const ROL_LABELS: Record<string, string> = {
+  MASTER_ADMIN: "Master Admin",
+  ADMIN: "Admin",
+  VENDEDOR: "Vendedor",
+  ALMACEN: "Almacén",
+  VIEWER: "Viewer",
+  CLIENTE: "Cliente",
+};
+
+export const ROL_STYLES: Record<string, string> = {
+  MASTER_ADMIN: "bg-[var(--color-gold)] text-black",
+  ADMIN: "bg-blue-100 text-blue-700",
+  VENDEDOR: "bg-green-100 text-green-700",
+  ALMACEN: "bg-amber-100 text-amber-700",
+  VIEWER: "bg-zinc-100 text-zinc-600",
+  CLIENTE: "bg-zinc-100 text-zinc-500",
+};
+
 export function esRolEquipo(rol?: string | null): rol is RolEquipo {
   return Boolean(rol && ROLES_EQUIPO.includes(rol as RolEquipo));
 }
