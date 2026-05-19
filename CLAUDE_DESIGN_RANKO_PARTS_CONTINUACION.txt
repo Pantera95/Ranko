@@ -1,0 +1,952 @@
+PROMPT DE CONTINUACION PARA CLAUDE DESIGN
+Proyecto: Ranko Parts SaaS Web Platform
+Fecha de transferencia: 2026-05-11
+Workspace actual: /Users/greegvizcaino/Documents/New project
+Proyecto Next.js: /Users/greegvizcaino/Documents/New project/ranko-parts-platform
+
+===============================================================================
+INSTRUCCION PRINCIPAL PARA CLAUDE DESIGN
+===============================================================================
+
+Actua como Senior Product Designer + Senior Full-Stack Engineer especializado en
+SaaS B2B/B2C para distribucion automotriz. Debes continuar el proyecto existente
+de Ranko Parts desde el estado actual. No reinicies el proyecto, no cambies el
+stack, no sustituyas la arquitectura y no elimines trabajo existente.
+
+Tu trabajo es continuar construyendo una plataforma web completa para Ranko Parts:
+web publica, tienda, portal del cliente y panel interno SaaS en el mismo dominio.
+El proyecto ya existe y compila. Debes leer los archivos indicados, respetar los
+patrones actuales, ampliar modulos poco a poco y verificar cada avance con:
+
+- npm run typecheck
+- npm run lint
+- npx prisma validate
+- npm run build
+
+Mantener el tono visual de Ranko Parts:
+- Negro puro y gris oscuro para panel interno.
+- Dorado #F5C518 / #D4A017 como acento principal.
+- Rojo #E53E3E para riesgo o deuda.
+- Verde #38A169 para estados positivos.
+- Estetica industrial, automotriz, premium, operativa.
+- UI de SaaS real, densa, escaneable y utilitaria.
+- Evitar landing pages innecesarias dentro de modulos operativos.
+
+===============================================================================
+VISION DEL PRODUCTO
+===============================================================================
+
+Ranko Parts es una empresa venezolana de distribucion de lubricantes y repuestos
+automotrices. Su especializacion visible es Jeep, Chrysler, Dodge, Ford, Mopar,
+Liqui-Moly y K&N. Opera B2C y B2B:
+
+- B2C: propietarios de vehiculos.
+- B2B: talleres, distribuidores locales y distribuidores regionales.
+- Mercado: Venezuela, dolarizado.
+- Ciudades clave: Caracas y Lecheria.
+- Canal principal: WhatsApp +58 414-7903498, web, Meta Ads.
+- Instagram: @ranko_parts.
+- Objetivo: reemplazar/mejorar el WordPress/WooCommerce actual con una plataforma
+  web + SaaS interno completo.
+
+Todo debe vivir bajo rankoparts.com:
+
+- /                      Web publica principal.
+- /tienda                E-commerce publico.
+- /tienda/[slug]         Pagina de producto.
+- /b2b                   Portal publico para talleres/distribuidores.
+- /referidos             Programa de referidos.
+- /orden/[codigo]        Tracking publico de orden.
+- /cliente               Portal privado del cliente.
+- /admin                 Panel interno SaaS.
+
+===============================================================================
+STACK TECNICO ACTUAL
+===============================================================================
+
+Proyecto: ranko-parts-platform
+
+Framework:
+- Next.js 16.2.4 con App Router.
+- React 19.2.4.
+- TypeScript.
+- Tailwind CSS 4.
+
+Backend:
+- Next.js Route Handlers.
+- Auth.js / NextAuth v5 beta con Credentials + JWT.
+- Prisma 7.8.0 con @prisma/adapter-pg y pg.
+- Base objetivo: PostgreSQL via Supabase.
+- Supabase SDK instalado para storage/realtime.
+
+UI / librerias:
+- lucide-react para iconos.
+- Recharts para BI.
+- @dnd-kit/core para kanban CRM.
+- Radix UI instalado para modales/select/tabs/toast/tooltip.
+- react-hook-form, zod, resolvers.
+- @react-pdf/renderer para facturas/cotizaciones PDF.
+- react-email, Resend.
+- qrcode y react-qr-code.
+- framer-motion y react-hot-toast disponibles.
+
+Scripts en package.json:
+
+- npm run dev       -> next dev
+- npm run build     -> next build
+- npm run start     -> next start
+- npm run lint      -> eslint
+- npm run typecheck -> tsc --noEmit
+- npm run test      -> vitest
+- npm run test:e2e  -> playwright test
+- npm run db:generate -> prisma generate
+- npm run db:push     -> prisma db push
+- npm run db:seed     -> node prisma/seed.mjs
+
+Dependencias clave instaladas:
+- @prisma/client, prisma, @prisma/adapter-pg, pg
+- next-auth, bcryptjs
+- @supabase/supabase-js
+- zod, react-hook-form
+- lucide-react
+- recharts
+- @dnd-kit/core, @dnd-kit/sortable, @dnd-kit/utilities
+- @tanstack/react-table, @tanstack/react-query
+- @react-pdf/renderer
+- react-email, @react-email/components, resend
+- @radix-ui/react-dialog/dropdown-menu/select/tabs/toast/tooltip
+- clsx, tailwind-merge
+- date-fns, sharp
+- vitest, testing-library, playwright
+
+===============================================================================
+VARIABLES DE ENTORNO ACTUALES
+===============================================================================
+
+Existe .env.example con:
+
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/ranko_parts?schema=public"
+DIRECT_URL="postgresql://postgres:postgres@localhost:5432/ranko_parts?schema=public"
+
+AUTH_SECRET="replace-with-a-strong-secret"
+AUTH_URL="http://localhost:3000"
+
+NEXT_PUBLIC_SUPABASE_URL=""
+NEXT_PUBLIC_SUPABASE_ANON_KEY=""
+SUPABASE_SERVICE_ROLE_KEY=""
+SUPABASE_STORAGE_BUCKET="ranko-parts"
+
+RESEND_API_KEY=""
+WHATSAPP_PHONE_NUMBER_ID=""
+WHATSAPP_ACCESS_TOKEN=""
+WHATSAPP_VERIFY_TOKEN=""
+
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+NEXT_PUBLIC_WHATSAPP_NUMBER="584147903498"
+
+SEED_ADMIN_EMAIL="admin@rankoparts.com"
+SEED_ADMIN_PASSWORD="change-me-before-production"
+SEED_CLIENT_EMAIL="cliente@rankoparts.com"
+SEED_CLIENT_PASSWORD="change-me-before-production"
+
+Estado importante:
+- La base real todavia no esta conectada.
+- DATABASE_URL esta en placeholder/local.
+- Muchos helpers de datos tienen fallback demo si Prisma falla.
+- Los warnings "fallback activo: base de datos no disponible" son esperados hasta
+  conectar Supabase/Postgres.
+
+===============================================================================
+ARQUITECTURA Y ARCHIVOS EXISTENTES
+===============================================================================
+
+Raiz del workspace:
+- RANKO_PARTS_PM_CORREGIDO.md
+- ranko-parts-platform/
+- CLAUDE_DESIGN_RANKO_PARTS_CONTINUACION.txt (este archivo)
+
+Archivos principales del proyecto:
+
+app/admin/[section]/page.tsx
+app/admin/catalogo/page.tsx
+app/admin/crm/page.tsx
+app/admin/layout.tsx
+app/admin/page.tsx
+app/api/admin/health/route.ts
+app/api/admin/leads/[id]/stage/route.ts
+app/api/admin/productos/[id]/route.ts
+app/api/auth/[...nextauth]/route.ts
+app/api/catalog/route.ts
+app/api/health/route.ts
+app/api/leads/route.ts
+app/b2b/page.tsx
+app/cliente/[section]/page.tsx
+app/cliente/layout.tsx
+app/cliente/page.tsx
+app/globals.css
+app/layout.tsx
+app/login/cliente/page.tsx
+app/login/equipo/page.tsx
+app/orden/[codigo]/page.tsx
+app/page.tsx
+app/referidos/page.tsx
+app/tienda/[slug]/page.tsx
+app/tienda/page.tsx
+
+components/admin/AdminCatalogTable.tsx
+components/auth/LoginForm.tsx
+components/auth/LogoutButton.tsx
+components/crm/PipelineKanban.tsx
+components/dashboard/MetricCard.tsx
+components/layout/AdminSidebar.tsx
+components/layout/ClienteNav.tsx
+components/layout/PublicNavbar.tsx
+components/layout/WhatsAppFloating.tsx
+components/public/B2BLeadForm.tsx
+components/public/CatalogFilters.tsx
+components/public/CompatibilitySearch.tsx
+components/public/ProductCard.tsx
+components/public/PublicStatBand.tsx
+
+lib/admin-catalog.ts
+lib/catalog.ts
+lib/client-portal.ts
+lib/crm.ts
+lib/dashboard.ts
+lib/db.ts
+lib/formatters.ts
+lib/lead-validation.ts
+lib/public-home.ts
+lib/rate-limit.ts
+lib/roles.ts
+lib/supabase.ts
+lib/utils.ts
+
+prisma/schema.prisma
+prisma/seed.mjs
+
+types/next-auth.d.ts
+auth.ts
+proxy.ts
+prisma.config.ts
+
+===============================================================================
+MODELO DE DATOS ACTUAL
+===============================================================================
+
+Archivo: prisma/schema.prisma
+
+Enums principales:
+- RolUsuario: MASTER_ADMIN, ADMIN, VENDEDOR, ALMACEN, VIEWER, CLIENTE
+- TipoCliente: MINORISTA, TALLER, DISTRIBUIDOR_LOCAL, DISTRIBUIDOR_REGIONAL, VIP
+- TemperaturaLead: CALIENTE, TIBIO, FRIO
+- FuenteCliente: ADS, REFERIDO, ORGANICO, DIRECTO, WHATSAPP, TIENDA_WEB
+- ClasificacionABC: A, B, C
+- EstadoLead: NUEVO, CALIFICANDO, COTIZADO, EN_NEGOCIACION,
+  CIERRE_PENDIENTE, VENTA_CERRADA, RECOMPRA, PERDIDO
+- EstadoCotizacion: BORRADOR, ENVIADA, ACEPTADA, RECHAZADA, VENCIDA
+- EstadoFactura: PENDIENTE, PARCIAL, PAGADA, VENCIDA, ANULADA
+- MetodoPago: ZELLE, TRANSFERENCIA, EFECTIVO, CREDITO, MIXTO
+- EstadoPago: PENDIENTE_VERIFICACION, CONFIRMADO, RECHAZADO, ANOMALO
+- AccionLog: acciones sensibles de facturacion, pagos, descuentos, anulaciones
+- TipoInteraccion: LLAMADA, WHATSAPP, EMAIL, REUNION, NOTA, etc.
+- EstadoReferido: PENDIENTE, ACTIVO, BENEFICIO_APLICADO
+- PrioridadAlerta: BAJA, MEDIA, ALTA, CRITICA
+- TipoAlerta: lead sin atencion, stock bajo, factura vencida, etc.
+- EstadoOrden: CONFIRMADO, EN_PREPARACION, EN_CAMINO, ENTREGADO, CANCELADO
+
+Modelos principales:
+- Usuario: usuarios internos y usuarios cliente. Tiene rol, passwordHash, territorio,
+  activo, telefono, relaciones con clientes, facturas, cotizaciones, leads, pagos.
+- Cliente: ficha comercial 360 con tipo, telefono, whatsapp, email, ciudad, pais,
+  direccion, RIF, condicion de pago, limite credito, scoring, temperatura, fuente,
+  referido, vendedor asignado, usuario portal.
+- Vehiculo: vehiculos del cliente.
+- Producto: SKU, nombre, descripcion, categoria, marca, codigos OEM/aftermarket,
+  precio, costo, imagenes, slug, destacado, activo.
+- ProductoCompatibilidad: compatibilidad por marca, modelo, anio desde/hasta,
+  motor y sistema.
+- Almacen: multi-almacen.
+- Inventario: stock por producto/almacen, min/max, ubicacion, clasificacion ABC.
+- Lead: CRM pipeline con cliente, usuario asignado, estado, temperatura, valor,
+  productos interesados, notas, seguimiento.
+- Cotizacion y CotizacionItem.
+- Factura y FacturaItem.
+- Pago.
+- LogFacturacion con firma digital.
+- Interaccion.
+- Referido.
+- Alerta.
+- Orden con historialEstados JSON.
+- SecuenciaAutomatica.
+
+Notas Prisma:
+- Prisma 7 usa prisma.config.ts.
+- datasource db provider = "postgresql".
+- generator client provider = "prisma-client-js".
+- lib/db.ts crea PrismaClient con PrismaPg adapter.
+
+===============================================================================
+AUTH Y RBAC
+===============================================================================
+
+Archivo: auth.ts
+
+- NextAuth con Credentials.
+- JWT strategy.
+- Login page default: /login/equipo.
+- Valida email/password con zod.
+- Busca usuario en prisma.usuario por email lowercase.
+- Verifica usuario.activo.
+- Compara password con bcryptjs.
+- Inserta token.id y token.rol.
+- session.user.id y session.user.rol quedan disponibles.
+
+Archivo: proxy.ts
+
+IMPORTANTE: En Next 16 se esta usando proxy.ts para middleware/proxy.
+
+Reglas:
+- /api/admin/* requiere rol de equipo; si no, JSON 401.
+- /admin/* requiere sesion y rol de equipo; si no sesion, redirect /login/equipo.
+- Si usuario CLIENTE intenta /admin, redirect /cliente.
+- /cliente/* requiere sesion CLIENTE; si no, redirect /login/cliente.
+- Si usuario equipo intenta /cliente, redirect /admin.
+
+lib/roles.ts define helper esRolEquipo.
+
+===============================================================================
+SEED ACTUAL
+===============================================================================
+
+Archivo: prisma/seed.mjs
+
+Crea/upsert:
+- Master Admin Ranko:
+  - email por SEED_ADMIN_EMAIL o admin@rankoparts.com
+  - password por SEED_ADMIN_PASSWORD o RankoAdmin2026!
+  - rol MASTER_ADMIN
+- Cliente Demo Ranko:
+  - email por SEED_CLIENT_EMAIL o cliente@rankoparts.com
+  - password por SEED_CLIENT_PASSWORD o RankoCliente2026!
+  - rol CLIENTE
+- Cliente comercial "Cliente Demo" / "Taller Demo Caracas"
+  - tipo TALLER
+  - codigoReferido RANKO-DEMO
+  - vehiculo Jeep Grand Cherokee 2014
+- Almacen "Principal Caracas"
+- Productos:
+  - LM-5W40-001, Liqui-Moly 5W-40 Sintetico
+  - KN-33-2457, K&N Filtro Alto Flujo
+  - MOP-68191349AC, Mopar Pastillas Freno Delanteras
+- Inventarios para esos productos.
+
+Para activar datos reales:
+1. Configurar DATABASE_URL y DIRECT_URL reales de Supabase/Postgres.
+2. npm run db:generate
+3. npm run db:push
+4. npm run db:seed
+5. npm run dev
+
+===============================================================================
+RUTAS PUBLICAS YA IMPLEMENTADAS
+===============================================================================
+
+/
+- Landing publica Ranko Parts.
+- Usa PublicNavbar, WhatsAppFloating, CompatibilitySearch, PublicStatBand.
+- Datos desde lib/public-home.ts con fallback si DB no esta disponible.
+- Identidad negra/dorada.
+
+/tienda
+- E-commerce publico con filtros por categoria, marca, modelo, anio, sistema.
+- Usa lib/catalog.ts.
+- Usa CatalogFilters y ProductCard.
+- Muestra productos fallback si DB falla.
+
+/tienda/[slug]
+- Pagina de producto.
+- Obtiene producto por slug desde lib/catalog.ts.
+- Tiene fallback para productos demo.
+
+/b2b
+- Pagina publica para talleres y distribuidores.
+- Tiene formulario de lead B2B.
+- Usa components/public/B2BLeadForm.tsx.
+
+/referidos
+- Pagina del programa de referidos.
+
+/orden/[codigo]
+- Tracking publico de orden por codigo.
+- Actualmente con estructura inicial/demo.
+
+===============================================================================
+APIS PUBLICAS YA IMPLEMENTADAS
+===============================================================================
+
+/api/health
+- Health check general.
+
+/api/catalog
+- Devuelve catalogo con filtros.
+- Usa lib/catalog.ts.
+
+/api/leads
+- Endpoint POST publico para crear lead desde B2B/formularios.
+- Valida con zod en lib/lead-validation.ts.
+- Tiene rate-limit simple en lib/rate-limit.ts.
+- Intenta crear/actualizar Cliente y Lead.
+- Si DB no esta disponible responde 503 con fallback WhatsApp.
+
+===============================================================================
+PORTAL CLIENTE YA IMPLEMENTADO
+===============================================================================
+
+/cliente
+- Dashboard inicial del cliente.
+- Usa layout con ClienteNav.
+- Datos desde lib/client-portal.ts con fallback.
+
+/cliente/[section]
+- Placeholder generic para:
+  - pedidos
+  - facturas
+  - cotizaciones
+  - perfil
+  - referidos
+
+Layout:
+- components/layout/ClienteNav.tsx
+
+Auth:
+- Protegido por proxy.ts.
+- Solo rol CLIENTE.
+
+===============================================================================
+ADMIN SAAS YA IMPLEMENTADO
+===============================================================================
+
+/admin
+- Dashboard ejecutivo inicial.
+- Usa lib/dashboard.ts.
+- Metrica de ventas hoy, ventas mes, pipeline activo, clientes activos.
+- Alertas de stock bajo, pagos anomalos, facturas vencidas.
+- Fallback si DB no esta disponible.
+
+/admin/[section]
+- Placeholder generico para secciones aun no implementadas:
+  - clientes
+  - cotizaciones
+  - facturacion
+  - deudas
+  - pagos
+  - alertas
+  - inventario
+  - ordenes
+  - ecommerce
+  - reportes
+  - automatizacion
+  - referidos
+  - usuarios
+  - logs
+  - configuracion
+
+Layout:
+- app/admin/layout.tsx
+- components/layout/AdminSidebar.tsx
+- Sidebar con grupos: Overview, Ventas, Finanzas, Operaciones,
+  Inteligencia, Sistema.
+- Filtra algunos items por rol:
+  - Alertas: MASTER_ADMIN, ADMIN
+  - Usuarios: MASTER_ADMIN, ADMIN
+  - Logs: MASTER_ADMIN
+
+===============================================================================
+MODULO CRM YA IMPLEMENTADO
+===============================================================================
+
+Archivos:
+- app/admin/crm/page.tsx
+- components/crm/PipelineKanban.tsx
+- lib/crm.ts
+- app/api/admin/leads/[id]/stage/route.ts
+
+Funcion:
+- Pagina real de CRM/pipeline.
+- Columnas de pipeline:
+  - NUEVO
+  - CALIFICANDO
+  - COTIZADO
+  - EN_NEGOCIACION
+  - CIERRE_PENDIENTE
+  - VENTA_CERRADA
+- Usa @dnd-kit/core.
+- Drag-and-drop de leads entre etapas.
+- Update optimista en UI.
+- PATCH /api/admin/leads/[id]/stage persiste estado.
+- Si falla la persistencia, revierte y muestra mensaje.
+- Si esta en fallback, indica que el cambio es visual.
+
+lib/crm.ts:
+- getCrmPipelineData()
+- Consulta prisma.lead.findMany con cliente y usuario.
+- Calcula metricas:
+  - Leads activos
+  - Valor estimado
+  - Sin vendedor
+- Tiene fallbackLeads:
+  - Taller Demo Caracas
+  - Distribuidor Oriente
+  - Cliente Wrangler
+
+API:
+- PATCH /api/admin/leads/[id]/stage
+- Requiere rol equipo.
+- Valida EstadoLead.
+- Actualiza lead.estado y fechaUltimoContacto.
+- Responde 503 si DB no esta disponible.
+
+===============================================================================
+MODULO ADMIN CATALOGO YA IMPLEMENTADO
+===============================================================================
+
+Archivos:
+- app/admin/catalogo/page.tsx
+- components/admin/AdminCatalogTable.tsx
+- lib/admin-catalog.ts
+- app/api/admin/productos/[id]/route.ts
+
+Funcion:
+- Convierte /admin/catalogo de placeholder a panel operativo.
+- Muestra encabezado "Catalogo y SKUs".
+- Panel de reposicion prioritaria.
+- Metric cards:
+  - SKUs activos
+  - Destacados
+  - Stock total
+  - Bajo minimo
+- Tabla administrable de productos:
+  - Producto, SKU, marca
+  - Categoria
+  - Precio y costo
+  - Margen
+  - Stock total y detalle por almacen
+  - Compatibilidades
+  - Estado activo/oculto
+  - Estado destacado
+  - Acciones rapidas con iconos Star, Eye, EyeOff
+- Busqueda cliente por SKU, nombre, marca, categoria o compatibilidad.
+- Update optimista para activo/destacado.
+- Si falla, revierte y muestra mensaje.
+
+lib/admin-catalog.ts:
+- getAdminCatalogData()
+- Consulta prisma.producto.findMany con compatibilidades e inventarios/almacen.
+- Calcula stockTotal, stockMinimo, margen y lowStock.
+- Tiene fallbackProducts para 3 productos demo.
+
+API:
+- PATCH /api/admin/productos/[id]
+- Requiere rol equipo.
+- Acepta body parcial:
+  - { activo: boolean }
+  - { destacado: boolean }
+- Actualiza prisma.producto.
+- Responde 400 si no hay cambios validos.
+- Responde 503 si DB no esta disponible.
+
+===============================================================================
+UI / ESTILO ACTUAL
+===============================================================================
+
+Archivo global:
+- app/globals.css
+
+Variables:
+- --color-base: #000000
+- --color-surface: #111111
+- --color-card: #1c1c1c
+- --color-gold: #f5c518
+- --color-gold-hover: #ffd700
+- --color-gold-muted: #d4a017
+- --color-white: #ffffff
+- --color-gray-light: #f4f5f7
+- --color-danger: #e53e3e
+- --color-success: #38a169
+- --color-border: #2a2a2a
+
+Tipografias actuales:
+- --font-display: "Arial Narrow", "Impact", sans-serif
+- --font-body: "DM Sans", "Inter", system-ui, sans-serif
+- --font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace
+
+Nota:
+- Google Fonts aun no esta realmente importado; se puede mejorar luego.
+- Muchos textos estan en espanol sin acentos por consistencia ASCII del codigo.
+
+Patrones visuales:
+- Admin: fondo negro, cards #111111/#1c1c1c, bordes zinc-800, texto blanco.
+- Publico: mezcla de negro/dorado y fondos claros #f4f5f7.
+- Botones de accion usan iconos lucide.
+- Cards no deben estar anidadas innecesariamente.
+- Secciones operativas deben ser densas y escaneables, no hero marketing.
+
+===============================================================================
+ESTADO DE VERIFICACION
+===============================================================================
+
+La ultima verificacion paso correctamente:
+
+- npm run typecheck -> OK
+- npm run lint -> OK
+- npx prisma validate -> OK
+- npm run build -> OK
+
+Build genero rutas:
+- /
+- /admin
+- /admin/[section]
+- /admin/catalogo
+- /admin/crm
+- /api/admin/health
+- /api/admin/leads/[id]/stage
+- /api/admin/productos/[id]
+- /api/auth/[...nextauth]
+- /api/catalog
+- /api/health
+- /api/leads
+- /b2b
+- /cliente
+- /cliente/[section]
+- /login/cliente
+- /login/equipo
+- /orden/[codigo]
+- /referidos
+- /tienda
+- /tienda/[slug]
+
+Warnings durante build:
+- "CRM fallback activo: base de datos no disponible."
+- "Admin catalog fallback activo: base de datos no disponible."
+- "Catalog fallback activo: base de datos no disponible."
+- "Public home fallback activo: base de datos no disponible."
+
+Estos warnings son esperados mientras no haya DATABASE_URL real.
+
+Browser local:
+- Dev server se levanta con npm run dev en http://localhost:3000.
+- /admin/crm y /admin/catalogo redirigen a /login/equipo si no hay sesion.
+- Esto es correcto por RBAC.
+
+===============================================================================
+NOTAS IMPORTANTES PARA CONTINUAR
+===============================================================================
+
+1. No eliminar fallbacks.
+   Son importantes para que el proyecto compile y se pueda demoear sin DB real.
+
+2. Mantener Route Handlers con params async.
+   En Next actual se usa:
+   type Context = { params: Promise<{ id: string }> };
+   const { id } = await context.params;
+
+3. Mantener RBAC.
+   Todo /admin y /api/admin debe exigir rol equipo.
+   Todo /cliente debe exigir rol CLIENTE.
+
+4. Mantener Prisma 7 + adapter-pg.
+   No volver a una configuracion vieja de Prisma.
+
+5. Mantener proxy.ts.
+   No crear middleware.ts duplicado salvo que se migre con cuidado.
+
+6. No meter contenido de marketing dentro de modulos admin.
+   El admin debe ser operativo.
+
+7. Usar lucide-react para iconos.
+
+8. Cada modulo nuevo debe tener:
+   - server data helper en lib/
+   - page real en app/admin/... o app/cliente/...
+   - fallback demo si DB falla
+   - API protegida si hay mutacion
+   - typecheck/lint/build OK
+
+9. No hacer cambios destructivos de git.
+   El repo esta con muchos archivos untracked porque es un proyecto nuevo.
+
+===============================================================================
+CONTINUACION RECOMENDADA - ROADMAP INMEDIATO
+===============================================================================
+
+La siguiente fase natural es convertir placeholders admin/cliente en modulos reales.
+Orden recomendado:
+
+1. Conectar DB real / Supabase
+   - Configurar DATABASE_URL y DIRECT_URL.
+   - npm run db:generate
+   - npm run db:push
+   - npm run db:seed
+   - Probar login equipo y cliente.
+
+2. Implementar /admin/inventario real
+   Objetivo: modulo operativo de multi-almacen y reorden.
+   Archivos sugeridos:
+   - lib/inventory.ts
+   - app/admin/inventario/page.tsx
+   - components/admin/InventoryTable.tsx
+   - app/api/admin/inventario/[id]/route.ts
+
+   Debe mostrar:
+   - Stock por almacen.
+   - Minimos/maximos.
+   - Clasificacion ABC.
+   - Ubicacion.
+   - SKUs bajo minimo.
+   - Accion rapida para ajustar cantidad.
+   - Accion para cambiar clasificacion ABC.
+   - Fallback demo si DB falla.
+
+   API sugerida:
+   PATCH /api/admin/inventario/[id]
+   Body permitido:
+   - cantidad?: number
+   - stockMinimo?: number
+   - stockMaximo?: number
+   - ubicacion?: string
+   - clasificacion?: "A" | "B" | "C"
+   Debe exigir rol equipo.
+
+3. Implementar /admin/clientes real
+   Archivos sugeridos:
+   - lib/customers.ts
+   - app/admin/clientes/page.tsx
+   - components/admin/CustomerTable.tsx
+   - app/api/admin/clientes/[id]/route.ts
+
+   Debe mostrar:
+   - Ficha resumida cliente.
+   - Tipo: minorista/taller/distribuidor.
+   - Vendedor asignado.
+   - Scoring.
+   - Limite credito.
+   - Deuda/saldo pendiente.
+   - Vehiculos.
+   - Ultima interaccion.
+
+4. Implementar /admin/cotizaciones y /admin/facturacion
+   - Crear builder de cotizacion.
+   - Crear items con productos.
+   - Convertir cotizacion aceptada a factura.
+   - Generar PDF con @react-pdf/renderer.
+   - Registrar logs de facturacion con firma digital.
+
+5. Implementar /admin/pagos y /admin/deudas
+   - Registro manual de pagos Zelle/transferencia/efectivo.
+   - Verificacion de pagos.
+   - Deteccion basica de anomalias:
+     - referencia duplicada
+     - monto superior a saldo
+     - factura vencida
+   - Panel de cartera por aging: 0-30, 31-60, 61-90, +90 dias.
+
+6. Implementar /admin/ordenes y tracking completo
+   - Ordenes asociadas a factura.
+   - EstadoOrden.
+   - HistorialEstados JSON.
+   - Public /orden/[codigo] debe leer orden real por codigo.
+   - Cliente /cliente/pedidos debe leer ordenes del cliente.
+
+7. Implementar e-commerce / carrito
+   - Carrito local o persistente.
+   - Checkout basico.
+   - Crear lead/cotizacion/orden segun flujo definido.
+   - CTA WhatsApp para confirmacion.
+
+8. Implementar portal cliente real
+   - /cliente/pedidos
+   - /cliente/facturas
+   - /cliente/cotizaciones
+   - /cliente/perfil
+   - /cliente/referidos
+
+9. Implementar BI/reportes
+   - Ventas por mes.
+   - Margen.
+   - Rotacion inventario.
+   - Conversion leads.
+   - Top SKUs.
+   - Clientes A/B/C.
+
+10. Implementar automatizacion omnicanal
+   - Secuencias WhatsApp/Email.
+   - Resend para email transaccional.
+   - Meta WhatsApp webhook.
+   - Plantillas para:
+     - lead nuevo
+     - cotizacion enviada
+     - factura vencida
+     - recompra programada
+
+===============================================================================
+SIGUIENTE TAREA CONCRETA SUGERIDA
+===============================================================================
+
+Si vas a continuar inmediatamente, empieza por:
+
+"Construir el modulo /admin/inventario real con tabla operativa, metricas,
+fallback demo y API PATCH protegida para ajustar stock."
+
+Acceptance criteria:
+- /admin/inventario debe dejar de usar app/admin/[section]/page.tsx.
+- Debe existir app/admin/inventario/page.tsx.
+- Debe existir lib/inventory.ts.
+- Debe existir components/admin/InventoryTable.tsx.
+- Debe existir app/api/admin/inventario/[id]/route.ts.
+- Debe mostrar al menos:
+  - unidades totales
+  - SKUs bajo minimo
+  - almacenes activos
+  - productos clasificacion A
+  - tabla con producto, almacen, cantidad, min/max, ubicacion, ABC
+- Debe permitir busqueda por SKU/producto/almacen.
+- Debe permitir ajuste optimista de cantidad.
+- Si no hay DB, usar fallback y mostrar aviso de modo demo.
+- Debe pasar:
+  - npm run typecheck
+  - npm run lint
+  - npx prisma validate
+  - npm run build
+
+===============================================================================
+DETALLE DE PATRONES A COPIAR
+===============================================================================
+
+Para server data helpers:
+- Ver lib/admin-catalog.ts, lib/crm.ts, lib/catalog.ts, lib/dashboard.ts.
+- Patron:
+  export async function getXData(): Promise<XData> {
+    try {
+      const data = await prisma...
+      return { ..., isFallback: false }
+    } catch {
+      console.warn("X fallback activo: base de datos no disponible.");
+      return { fallback..., isFallback: true }
+    }
+  }
+
+Para componentes cliente con mutacion:
+- Ver components/admin/AdminCatalogTable.tsx.
+- Ver components/crm/PipelineKanban.tsx.
+- Patron:
+  - useState(initialData)
+  - update optimista
+  - fetch PATCH a /api/admin/...
+  - si response !ok, revertir y mostrar mensaje
+  - si isFallback, explicar que es cambio visual solamente
+
+Para API protegida:
+- Ver app/api/admin/productos/[id]/route.ts.
+- Ver app/api/admin/leads/[id]/stage/route.ts.
+- Patron:
+  const session = await auth();
+  if (!esRolEquipo(session?.user?.rol)) return Response.json(..., { status: 401 });
+  const { id } = await context.params;
+  const body = await request.json().catch(() => null);
+  validar body
+  try prisma.update(...)
+  catch return 503
+
+Para paginas admin:
+- Ver app/admin/catalogo/page.tsx.
+- Ver app/admin/crm/page.tsx.
+- Usar:
+  <main className="p-4 text-white sm:p-6">
+    <section className="mx-auto max-w-7xl">
+      ...
+    </section>
+  </main>
+
+===============================================================================
+PROMPT ORIGINAL CORREGIDO
+===============================================================================
+
+Existe un prompt maestro corregido en:
+/Users/greegvizcaino/Documents/New project/RANKO_PARTS_PM_CORREGIDO.md
+
+Ese prompt contiene:
+- contexto del negocio
+- diagnostico del WordPress actual
+- modulos enterprise completos
+- arquitectura tecnica deseada
+- rutas
+- branding
+- instrucciones modulares
+
+Claude debe tomar ese prompt como vision de producto, pero debe tomar este archivo
+como estado actual real de implementacion.
+
+===============================================================================
+LIMITACIONES CONOCIDAS
+===============================================================================
+
+- No hay DB real conectada aun.
+- No se ha probado login real contra Supabase/Postgres porque DATABASE_URL es placeholder.
+- Algunas paginas son placeholders genericos en /admin/[section] y /cliente/[section].
+- No hay carrito/checkout real todavia.
+- No hay PDF real de facturas/cotizaciones todavia.
+- No hay webhooks WhatsApp/Resend implementados todavia.
+- No hay tests Vitest/Playwright escritos aun, aunque las dependencias estan instaladas.
+- No hay import real de Google Fonts aun.
+- El proyecto esta nuevo y muchos archivos pueden estar untracked en git.
+
+===============================================================================
+COMO ARRANCAR LOCALMENTE
+===============================================================================
+
+cd "/Users/greegvizcaino/Documents/New project/ranko-parts-platform"
+npm install
+npm run db:generate
+npm run dev
+
+Abrir:
+http://localhost:3000
+
+Rutas publicas:
+http://localhost:3000/
+http://localhost:3000/tienda
+http://localhost:3000/b2b
+http://localhost:3000/referidos
+
+Rutas protegidas:
+http://localhost:3000/admin
+http://localhost:3000/admin/crm
+http://localhost:3000/admin/catalogo
+http://localhost:3000/cliente
+
+Sin sesion, /admin redirige a /login/equipo y /cliente a /login/cliente.
+
+===============================================================================
+RESUMEN EJECUTIVO
+===============================================================================
+
+El proyecto Ranko Parts ya tiene:
+- Next.js 16 + TS + Tailwind.
+- Prisma schema enterprise completo.
+- Auth.js Credentials + RBAC.
+- Public landing/tienda/b2b/referidos/tracking.
+- Portal cliente inicial.
+- Admin dashboard inicial.
+- CRM admin real con kanban drag-and-drop.
+- Catalogo admin real con tabla de SKUs y acciones.
+- APIs publicas y admin iniciales.
+- Seed demo.
+- Fallbacks para demo sin DB.
+- Build/typecheck/lint/prisma validate pasando.
+
+La continuacion correcta es profundizar modulos operativos, empezando por
+/admin/inventario, luego clientes, cotizaciones/facturacion, pagos/deudas,
+ordenes/tracking y portal cliente real.
+
+No reinicies. Continua.

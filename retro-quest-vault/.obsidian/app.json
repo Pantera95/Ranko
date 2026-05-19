@@ -1,0 +1,12 @@
+{
+  "alwaysUpdateLinks": true,
+  "attachmentFolderPath": "99_Assets",
+  "newFileFolderPath": "02_Worldbuilding",
+  "promptDelete": false,
+  "readableLineLength": false,
+  "showInlineTitle": true,
+  "spellcheck": true,
+  "tabSize": 2,
+  "useMarkdownLinks": true,
+  "vimMode": false
+}

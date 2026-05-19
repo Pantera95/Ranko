@@ -1,0 +1,116 @@
+body {
+  --retro-bg: #11151c;
+  --retro-panel: #1b2430;
+  --retro-panel-2: #243041;
+  --retro-text: #f4f1de;
+  --retro-cyan: #6fffe9;
+  --retro-gold: #ffd166;
+  --retro-pink: #ff6392;
+  --retro-green: #95d67b;
+  --retro-border: #5bc0be;
+  --background-primary: var(--retro-bg);
+  --background-secondary: var(--retro-panel);
+  --background-secondary-alt: var(--retro-panel-2);
+  --background-modifier-border: var(--retro-border);
+  --text-normal: var(--retro-text);
+  --text-accent: var(--retro-gold);
+  --interactive-accent: var(--retro-cyan);
+  --interactive-accent-hover: #9cf6ea;
+  --h1-color: var(--retro-gold);
+  --h2-color: var(--retro-cyan);
+  --h3-color: var(--retro-pink);
+}
+
+.workspace-leaf-content,
+.view-content,
+.markdown-source-view,
+.markdown-preview-view {
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.02)),
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.02) 0,
+      rgba(255, 255, 255, 0.02) 1px,
+      transparent 1px,
+      transparent 4px
+    ),
+    var(--retro-bg);
+}
+
+.markdown-preview-view,
+.markdown-source-view.mod-cm6 .cm-scroller {
+  line-height: 1.65;
+  letter-spacing: 0.02em;
+}
+
+.markdown-preview-view h1,
+.markdown-preview-view h2,
+.markdown-preview-view h3,
+.HyperMD-header {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.35);
+}
+
+.markdown-preview-view h1 {
+  border: 3px solid var(--retro-gold);
+  background: linear-gradient(90deg, rgba(255, 209, 102, 0.16), transparent);
+  padding: 10px 12px;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.25);
+}
+
+.markdown-preview-view h2 {
+  border-left: 6px solid var(--retro-cyan);
+  padding-left: 10px;
+}
+
+.markdown-preview-view blockquote {
+  border-left: 6px solid var(--retro-pink);
+  background: rgba(255, 99, 146, 0.08);
+  color: var(--retro-text);
+  padding: 10px 14px;
+}
+
+.markdown-preview-view ul > li.task-list-item {
+  list-style: none;
+  margin-left: -1.2em;
+}
+
+.markdown-preview-view ul > li.task-list-item input[type="checkbox"] {
+  border: 2px solid var(--retro-green);
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.25);
+}
+
+.markdown-preview-view a,
+.cm-link,
+.external-link {
+  color: var(--retro-cyan) !important;
+}
+
+.nav-file-title,
+.nav-folder-title,
+.workspace-tab-header-inner-title {
+  letter-spacing: 0.05em;
+}
+
+.status-bar,
+.workspace-tab-header-container,
+.side-dock-ribbon,
+.workspace-sidedock-vault-profile {
+  background: var(--retro-panel);
+  border-color: var(--retro-border);
+}
+
+.markdown-preview-view code,
+.cm-inline-code {
+  background: rgba(111, 255, 233, 0.12);
+  color: #c9fff6;
+  border-radius: 0;
+  padding: 2px 5px;
+}
+
+.markdown-preview-view hr {
+  border: none;
+  height: 4px;
+  background: linear-gradient(90deg, var(--retro-cyan), var(--retro-gold), var(--retro-pink));
+}

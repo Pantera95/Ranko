@@ -1,0 +1,13 @@
+{
+  "accentColor": "#ffd54f",
+  "baseFontSize": 17,
+  "cssTheme": "",
+  "enabledCssSnippets": [
+    "retro-16bit"
+  ],
+  "interfaceFontFamily": "Avenir Next, Trebuchet MS, sans-serif",
+  "monospaceFontFamily": "Courier New, monospace",
+  "nativeMenus": false,
+  "textFontFamily": "Avenir Next, Trebuchet MS, sans-serif",
+  "theme": "obsidian"
+}
