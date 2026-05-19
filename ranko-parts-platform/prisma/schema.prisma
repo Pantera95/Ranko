@@ -1,0 +1,526 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum RolUsuario {
+  MASTER_ADMIN
+  ADMIN
+  VENDEDOR
+  ALMACEN
+  VIEWER
+  CLIENTE
+}
+
+enum TipoCliente {
+  MINORISTA
+  TALLER
+  DISTRIBUIDOR_LOCAL
+  DISTRIBUIDOR_REGIONAL
+  VIP
+}
+
+enum TemperaturaLead {
+  CALIENTE
+  TIBIO
+  FRIO
+}
+
+enum FuenteCliente {
+  ADS
+  REFERIDO
+  ORGANICO
+  DIRECTO
+  WHATSAPP
+  TIENDA_WEB
+}
+
+enum ClasificacionABC {
+  A
+  B
+  C
+}
+
+enum EstadoLead {
+  NUEVO
+  CALIFICANDO
+  COTIZADO
+  EN_NEGOCIACION
+  CIERRE_PENDIENTE
+  VENTA_CERRADA
+  RECOMPRA
+  PERDIDO
+}
+
+enum EstadoCotizacion {
+  BORRADOR
+  ENVIADA
+  ACEPTADA
+  RECHAZADA
+  VENCIDA
+}
+
+enum EstadoFactura {
+  PENDIENTE
+  PARCIAL
+  PAGADA
+  VENCIDA
+  ANULADA
+}
+
+enum MetodoPago {
+  ZELLE
+  TRANSFERENCIA
+  EFECTIVO
+  CREDITO
+  MIXTO
+}
+
+enum EstadoPago {
+  PENDIENTE_VERIFICACION
+  CONFIRMADO
+  RECHAZADO
+  ANOMALO
+}
+
+enum AccionLog {
+  CREAR_FACTURA
+  MODIFICAR_FACTURA
+  ANULAR_FACTURA
+  CREAR_COTIZACION
+  MODIFICAR_COTIZACION
+  CONVERTIR_COTIZACION
+  APLICAR_DESCUENTO
+  CAMBIAR_PRECIO
+  REGISTRAR_PAGO
+  REVERTIR_PAGO
+  MARCAR_ANOMALIA
+}
+
+enum TipoInteraccion {
+  LLAMADA
+  WHATSAPP
+  EMAIL
+  REUNION
+  NOTA
+  COTIZACION_ENVIADA
+  FACTURA_EMITIDA
+  PAGO_REGISTRADO
+}
+
+enum EstadoReferido {
+  PENDIENTE
+  ACTIVO
+  BENEFICIO_APLICADO
+}
+
+enum PrioridadAlerta {
+  BAJA
+  MEDIA
+  ALTA
+  CRITICA
+}
+
+enum TipoAlerta {
+  LEAD_SIN_ATENCION
+  STOCK_BAJO_MINIMO
+  FACTURA_VENCIDA
+  META_EN_RIESGO
+  META_ALCANZADA
+  PAGO_ANOMALO
+  DESCUENTO_EXCESIVO
+  ANULACIONES_REPETIDAS
+  DEUDA_CRITICA
+  RECOMPRA_PROGRAMADA
+}
+
+enum EstadoOrden {
+  CONFIRMADO
+  EN_PREPARACION
+  EN_CAMINO
+  ENTREGADO
+  CANCELADO
+}
+
+model Usuario {
+  id            String     @id @default(cuid())
+  nombre        String
+  email         String     @unique
+  passwordHash  String
+  rol           RolUsuario
+  territorio    String?
+  activo        Boolean    @default(true)
+  avatar        String?
+  telefono      String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  clientesAsignados   Cliente[]        @relation("VendedorCliente")
+  clientePortal       Cliente?         @relation("UsuarioPortalCliente")
+  facturasCreadas     Factura[]
+  cotizacionesCreadas Cotizacion[]
+  leadsAsignados      Lead[]
+  interacciones       Interaccion[]
+  logsAccion          LogFacturacion[]
+  alertasRecibidas    Alerta[]
+  pagosRegistrados    Pago[]           @relation("PagoRegistradoPor")
+  pagosVerificados    Pago[]           @relation("PagoVerificadoPor")
+}
+
+model Cliente {
+  id                String          @id @default(cuid())
+  nombre            String
+  empresa           String?
+  tipo              TipoCliente     @default(MINORISTA)
+  telefono          String
+  whatsapp          String?
+  email             String?
+  ciudad            String?
+  pais              String          @default("Venezuela")
+  direccion         String?
+  rif               String?
+  condicionPago     String?
+  limiteCredito     Decimal         @default(0) @db.Decimal(12, 2)
+  scoring           Int             @default(50)
+  temperatura       TemperaturaLead @default(TIBIO)
+  fuente            FuenteCliente   @default(DIRECTO)
+  notas             String?
+  bloqueado         Boolean         @default(false)
+  activo            Boolean         @default(true)
+  codigoReferido    String?         @unique
+  referidoPorId     String?
+  referidoPor       Cliente?        @relation("ClientesReferidos", fields: [referidoPorId], references: [id])
+  clientesReferidos Cliente[]       @relation("ClientesReferidos")
+  usuarioId         String?
+  usuarioAsignado   Usuario?        @relation("VendedorCliente", fields: [usuarioId], references: [id])
+  usuarioPortalId   String?         @unique
+  usuarioPortal     Usuario?        @relation("UsuarioPortalCliente", fields: [usuarioPortalId], references: [id])
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  vehiculos     Vehiculo[]
+  cotizaciones  Cotizacion[]
+  facturas      Factura[]
+  pagos         Pago[]
+  ordenes       Orden[]
+  leads         Lead[]
+  interacciones Interaccion[]
+  referidos     Referido[]    @relation("ClienteReferidor")
+
+  @@index([telefono])
+  @@index([email])
+  @@index([tipo])
+  @@index([usuarioId])
+}
+
+model Vehiculo {
+  id        String   @id @default(cuid())
+  clienteId String
+  cliente   Cliente  @relation(fields: [clienteId], references: [id])
+  marca     String
+  modelo    String
+  anio      Int
+  motor     String?
+  color     String?
+  placa     String?
+  vin       String?
+  notas     String?
+
+  @@index([marca, modelo, anio])
+}
+
+model Producto {
+  id                 String   @id @default(cuid())
+  sku                String   @unique
+  nombre             String
+  descripcion        String?
+  categoria          String
+  subcategoria       String?
+  marca              String
+  codigoOEM          String?
+  codigoAftermarket  String?
+  precio             Decimal  @db.Decimal(12, 2)
+  costo              Decimal  @db.Decimal(12, 2)
+  imagenes           String[]
+  slug               String   @unique
+  destacado          Boolean  @default(false)
+  activo             Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  compatibilidades ProductoCompatibilidad[]
+  inventarios      Inventario[]
+  itemsCotizacion  CotizacionItem[]
+  itemsFactura     FacturaItem[]
+
+  @@index([categoria])
+  @@index([marca])
+  @@index([destacado, activo])
+}
+
+model ProductoCompatibilidad {
+  id         String   @id @default(cuid())
+  productoId String
+  producto   Producto @relation(fields: [productoId], references: [id], onDelete: Cascade)
+  marca      String
+  modelo     String
+  anioDesde  Int
+  anioHasta  Int
+  motor      String?
+  sistema    String?
+
+  @@index([marca, modelo, anioDesde, anioHasta])
+  @@index([sistema])
+}
+
+model Almacen {
+  id           String       @id @default(cuid())
+  nombre       String
+  direccion    String?
+  ciudad       String
+  responsable  String?
+  activo       Boolean      @default(true)
+  inventarios  Inventario[]
+}
+
+model Inventario {
+  id                   String           @id @default(cuid())
+  productoId           String
+  almacenId            String
+  producto             Producto         @relation(fields: [productoId], references: [id])
+  almacen              Almacen          @relation(fields: [almacenId], references: [id])
+  cantidad             Int              @default(0)
+  stockMinimo          Int              @default(5)
+  stockMaximo          Int              @default(100)
+  ubicacion            String?
+  clasificacion        ClasificacionABC @default(B)
+  ultimaActualizacion  DateTime         @default(now())
+
+  @@unique([productoId, almacenId])
+}
+
+model Lead {
+  id                       String          @id @default(cuid())
+  clienteId                String
+  cliente                  Cliente         @relation(fields: [clienteId], references: [id])
+  usuarioId                String?
+  usuario                  Usuario?        @relation(fields: [usuarioId], references: [id])
+  estado                   EstadoLead      @default(NUEVO)
+  temperatura              TemperaturaLead @default(CALIENTE)
+  pipeline                 String          @default("Principal")
+  valorEstimado            Decimal?        @db.Decimal(12, 2)
+  probabilidad             Int?
+  productosInteresados     String[]
+  notas                    String?
+  motivoPerdida            String?
+  fechaUltimoContacto      DateTime?
+  fechaProximoSeguimiento  DateTime?
+  createdAt                DateTime        @default(now())
+  updatedAt                DateTime        @updatedAt
+
+  @@index([estado])
+  @@index([usuarioId])
+}
+
+model Cotizacion {
+  id                  String           @id @default(cuid())
+  numero              String           @unique
+  clienteId           String
+  cliente             Cliente          @relation(fields: [clienteId], references: [id])
+  usuarioId           String
+  usuario             Usuario          @relation(fields: [usuarioId], references: [id])
+  subtotal            Decimal          @db.Decimal(12, 2)
+  descuento           Decimal          @default(0) @db.Decimal(12, 2)
+  total               Decimal          @db.Decimal(12, 2)
+  listaPrecios        Int              @default(1)
+  estado              EstadoCotizacion @default(BORRADOR)
+  validezDias         Int              @default(7)
+  notas               String?
+  enviadaPorWhatsApp  Boolean          @default(false)
+  enviadaPorEmail     Boolean          @default(false)
+  convertidaAFactura  Boolean          @default(false)
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  items   CotizacionItem[]
+  factura Factura?
+  logs    LogFacturacion[]
+}
+
+model CotizacionItem {
+  id             String     @id @default(cuid())
+  cotizacionId   String
+  cotizacion     Cotizacion @relation(fields: [cotizacionId], references: [id], onDelete: Cascade)
+  productoId     String
+  producto       Producto   @relation(fields: [productoId], references: [id])
+  cantidad       Int
+  precioUnitario Decimal    @db.Decimal(12, 2)
+  descuento      Decimal    @default(0) @db.Decimal(12, 2)
+  total          Decimal    @db.Decimal(12, 2)
+}
+
+model Factura {
+  id               String        @id @default(cuid())
+  numero           String        @unique
+  clienteId        String
+  cliente          Cliente       @relation(fields: [clienteId], references: [id])
+  usuarioId        String
+  usuario          Usuario       @relation(fields: [usuarioId], references: [id])
+  subtotal         Decimal       @db.Decimal(12, 2)
+  descuento        Decimal       @default(0) @db.Decimal(12, 2)
+  impuesto         Decimal       @default(0) @db.Decimal(12, 2)
+  total            Decimal       @db.Decimal(12, 2)
+  montoPagado      Decimal       @default(0) @db.Decimal(12, 2)
+  saldoPendiente   Decimal       @db.Decimal(12, 2)
+  estado           EstadoFactura @default(PENDIENTE)
+  metodoPago       MetodoPago?
+  fechaEmision     DateTime      @default(now())
+  fechaVencimiento DateTime
+  cotizacionId     String?       @unique
+  cotizacion       Cotizacion?   @relation(fields: [cotizacionId], references: [id])
+  notas            String?
+  pdfUrl           String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  items FacturaItem[]
+  pagos Pago[]
+  orden Orden?
+  logs  LogFacturacion[]
+
+  @@index([estado])
+  @@index([clienteId])
+}
+
+model FacturaItem {
+  id             String   @id @default(cuid())
+  facturaId      String
+  factura        Factura  @relation(fields: [facturaId], references: [id], onDelete: Cascade)
+  productoId     String
+  producto       Producto @relation(fields: [productoId], references: [id])
+  cantidad       Int
+  precioUnitario Decimal  @db.Decimal(12, 2)
+  descuento      Decimal  @default(0) @db.Decimal(12, 2)
+  total          Decimal  @db.Decimal(12, 2)
+}
+
+model Pago {
+  id                 String     @id @default(cuid())
+  facturaId          String
+  factura            Factura    @relation(fields: [facturaId], references: [id])
+  clienteId          String
+  cliente            Cliente    @relation(fields: [clienteId], references: [id])
+  monto              Decimal    @db.Decimal(12, 2)
+  metodo             MetodoPago
+  referencia         String?
+  comprobante        String?
+  estado             EstadoPago @default(PENDIENTE_VERIFICACION)
+  esAnomalo          Boolean    @default(false)
+  razonAnomalia      String?
+  registradoPorId    String?
+  registradoPor      Usuario?   @relation("PagoRegistradoPor", fields: [registradoPorId], references: [id])
+  verificadoPorId    String?
+  verificadoPor      Usuario?   @relation("PagoVerificadoPor", fields: [verificadoPorId], references: [id])
+  fechaPago          DateTime   @default(now())
+  createdAt          DateTime   @default(now())
+
+  logs LogFacturacion[]
+
+  @@index([referencia])
+  @@index([estado])
+}
+
+model LogFacturacion {
+  id            String    @id @default(cuid())
+  usuarioId     String
+  usuario       Usuario   @relation(fields: [usuarioId], references: [id])
+  accion        AccionLog
+  entidadTipo   String
+  entidadId     String
+  facturaId     String?
+  factura       Factura?  @relation(fields: [facturaId], references: [id])
+  cotizacionId  String?
+  cotizacion    Cotizacion? @relation(fields: [cotizacionId], references: [id])
+  pagoId        String?
+  pago          Pago?     @relation(fields: [pagoId], references: [id])
+  datosAntes    Json?
+  datosDespues  Json?
+  firmaDigital  String
+  ipAddress     String?
+  timestamp     DateTime  @default(now())
+
+  @@index([entidadTipo, entidadId])
+  @@index([usuarioId, timestamp])
+}
+
+model Interaccion {
+  id               String          @id @default(cuid())
+  clienteId        String
+  cliente          Cliente         @relation(fields: [clienteId], references: [id])
+  usuarioId        String
+  usuario          Usuario         @relation(fields: [usuarioId], references: [id])
+  tipo             TipoInteraccion
+  descripcion      String
+  resultado        String?
+  fechaInteraccion DateTime        @default(now())
+}
+
+model Referido {
+  id                    String         @id @default(cuid())
+  clienteReferidorId    String
+  clienteReferidor      Cliente        @relation("ClienteReferidor", fields: [clienteReferidorId], references: [id])
+  empresaReferidaNombre String
+  empresaReferidaEmail  String?
+  codigoReferido        String
+  estado                EstadoReferido @default(PENDIENTE)
+  creditoUSD            Decimal        @default(0) @db.Decimal(12, 2)
+  descuentoPorcentaje   Decimal        @default(0) @db.Decimal(5, 2)
+  beneficioAplicado     Boolean        @default(false)
+  fechaActivacion       DateTime?
+  createdAt             DateTime       @default(now())
+}
+
+model Alerta {
+  id               String          @id @default(cuid())
+  tipo             TipoAlerta
+  titulo           String
+  mensaje          String
+  entidadTipo      String?
+  entidadId        String?
+  usuarioDestinoId String?
+  usuario          Usuario?        @relation(fields: [usuarioDestinoId], references: [id])
+  leida            Boolean         @default(false)
+  prioridad        PrioridadAlerta @default(MEDIA)
+  createdAt        DateTime        @default(now())
+
+  @@index([usuarioDestinoId, leida])
+}
+
+model Orden {
+  id               String      @id @default(cuid())
+  codigo           String      @unique
+  facturaId        String      @unique
+  factura          Factura     @relation(fields: [facturaId], references: [id])
+  clienteId        String
+  cliente          Cliente     @relation(fields: [clienteId], references: [id])
+  estado           EstadoOrden @default(CONFIRMADO)
+  responsable      String?
+  direccionEntrega String?
+  estimadoEntrega  DateTime?
+  notasDespacho    String?
+  historialEstados Json
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+}
+
+model SecuenciaAutomatica {
+  id        String   @id @default(cuid())
+  nombre    String
+  tipo      String
+  activa    Boolean  @default(true)
+  pasos     Json
+  createdAt DateTime @default(now())
+}
