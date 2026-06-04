@@ -43,7 +43,7 @@ export default async function ClienteSectionPage({ params }: ClienteSectionPageP
   return (
     <main className="p-4 sm:p-6" style={{ color: "var(--text-primary)" }}>
       <section className="mx-auto max-w-6xl">
-        <p className="text-sm font-bold uppercase tracking-[0.18em]" style={{ color: "var(--color-gold)" }}>
+        <p className="font-mono-tech text-xs" style={{ color: "var(--color-gold)" }}>
           Portal del cliente
         </p>
         <h1 className="mt-3 text-4xl font-black uppercase">{data.title}</h1>

@@ -1,11 +1,15 @@
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { Plus, X } from "lucide-react";
 
 import { QuoteTable } from "@/components/admin/QuoteTable";
 import { getQuotesListData } from "@/lib/quotes";
 
-export default async function AdminCotizacionesPage() {
-  const data = await getQuotesListData();
+type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
+
+export default async function AdminCotizacionesPage({ searchParams }: Props) {
+  const sp = await searchParams;
+  const clienteId = typeof sp.clienteId === "string" ? sp.clienteId : undefined;
+  const data = await getQuotesListData(clienteId);
 
   const pendientes = data.quotes.filter(
     (q) => q.estado === "ENVIADA" && !q.convertidaAFactura,
@@ -16,10 +20,11 @@ export default async function AdminCotizacionesPage() {
       <section className="mx-auto max-w-7xl">
         <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
           <div>
-            <p className="text-sm font-bold uppercase tracking-[0.18em]" style={{ color: "var(--color-gold)" }}>
+            <p className="font-mono-tech inline-flex items-center gap-2 text-xs" style={{ color: "var(--color-gold)" }}>
+              <span className="block h-px w-6" style={{ background: "var(--color-gold)" }} />
               Ventas
             </p>
-            <h1 className="mt-3 text-4xl font-black uppercase">Cotizaciones</h1>
+            <h1 className="font-display-kinetic--tight mt-3 text-3xl uppercase leading-tight sm:text-4xl">Cotizaciones</h1>
             <p className="mt-3 max-w-3xl leading-7" style={{ color: "var(--text-secondary)" }}>
               Pipeline de propuestas comerciales. Cambia estados, convierte cotizaciones
               aceptadas a factura y registra logs automaticamente.
@@ -27,7 +32,7 @@ export default async function AdminCotizacionesPage() {
           </div>
 
           <div className="p-4" style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}>
-            <p className="text-xs font-black uppercase tracking-[0.18em]" style={{ color: "var(--text-muted)" }}>
+            <p className="font-mono-tech text-xs" style={{ color: "var(--text-muted)" }}>
               Esperando respuesta
             </p>
             <div className="mt-4 grid gap-3">
@@ -51,6 +56,25 @@ export default async function AdminCotizacionesPage() {
             </div>
           </div>
         </div>
+
+        {data.filterClienteNombre ? (
+          <div
+            className="mt-5 flex items-center gap-3 p-3 text-sm"
+            style={{ border: "1px solid var(--border)", background: "var(--bg-card)" }}
+          >
+            <span style={{ color: "var(--text-muted)" }}>Filtrando por:</span>
+            <span className="font-bold" style={{ color: "var(--text-primary)" }}>
+              {data.filterClienteNombre}
+            </span>
+            <Link
+              href="/admin/cotizaciones"
+              className="ml-auto inline-flex items-center gap-1 text-xs font-bold transition hover:opacity-70"
+              style={{ color: "var(--text-muted)" }}
+            >
+              <X size={12} /> Quitar filtro
+            </Link>
+          </div>
+        ) : null}
 
         {data.isFallback ? (
           <div

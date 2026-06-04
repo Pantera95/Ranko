@@ -128,7 +128,7 @@ export default async function AdminSectionPage({ params }: AdminSectionPageProps
   return (
     <main className="p-4 sm:p-6" style={{ color: "var(--text-primary)" }}>
       <section className="mx-auto max-w-7xl">
-        <p className="text-sm font-bold uppercase tracking-[0.18em] text-[var(--color-gold)]">
+        <p className="font-mono-tech text-xs text-[var(--color-gold)]">
           {data.eyebrow}
         </p>
         <h2 className="mt-3 text-4xl font-black uppercase">{data.title}</h2>

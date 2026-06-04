@@ -16,35 +16,61 @@ export default async function TiendaPage({ searchParams }: TiendaPageProps) {
   return (
     <main className="min-h-screen" style={{ background: "var(--bg-base)", color: "var(--text-primary)" }}>
       <PublicNavbar />
-      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid gap-8 lg:grid-cols-[0.75fr_1.25fr]">
-          <div>
-            <p className="text-sm font-bold uppercase tracking-[0.18em]" style={{ color: "var(--color-gold)" }}>
-              Tienda Ranko Parts
-            </p>
-            <h1 className="mt-3 text-5xl font-black uppercase">Catalogo automotriz</h1>
-            <p className="mt-4 leading-8" style={{ color: "var(--text-secondary)" }}>
-              Productos para Jeep, Chrysler, Dodge y Ford con busqueda por compatibilidad,
-              precio USD, stock y consulta directa por WhatsApp.
-            </p>
-            <div className="mt-5 flex flex-wrap gap-2">
-              {["Jeep", "Chrysler", "Dodge", "Ford", "Liqui-Moly", "Mopar", "K&N"].map((brand) => (
-                <span
-                  key={brand}
-                  className="px-3 py-2 text-xs font-black uppercase"
-                  style={{
-                    border: "1px solid var(--border)",
-                    background: "var(--bg-card)",
-                    color: "var(--text-secondary)",
-                  }}
-                >
-                  {brand}
-                </span>
-              ))}
+      {/* Header band — sits on a darker stage with subtle blueprint grid to
+          echo the hero, then transitions to the lighter list surface below. */}
+      <section
+        className="relative overflow-hidden border-b"
+        style={{ borderColor: "var(--border)", background: "var(--bg-surface)" }}
+      >
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 opacity-50 bg-[linear-gradient(90deg,rgba(245,197,24,0.06)_1px,transparent_1px),linear-gradient(rgba(245,197,24,0.05)_1px,transparent_1px)] bg-[size:42px_42px]"
+        />
+        <div
+          aria-hidden="true"
+          className="absolute -right-32 top-1/2 hidden h-[420px] w-[420px] -translate-y-1/2 lg:block"
+          style={{
+            background:
+              "radial-gradient(circle at center, rgba(245,197,24,0.18), transparent 65%)",
+          }}
+        />
+        <div className="relative mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+          <div className="grid gap-8 lg:grid-cols-[0.75fr_1.25fr] lg:items-end">
+            <div>
+              <p className="font-mono-tech inline-flex items-center gap-2 text-xs" style={{ color: "var(--color-gold)" }}>
+                <span className="block h-px w-8" style={{ background: "var(--color-gold)" }} />
+                Tienda Ranko Parts
+              </p>
+              <h1 className="font-display-kinetic--tight mt-4 text-4xl uppercase leading-[1.05] sm:text-5xl">
+                Catálogo <br />
+                <span style={{ color: "var(--color-gold)" }}>automotriz</span>
+              </h1>
+              <p className="mt-5 max-w-prose leading-8" style={{ color: "var(--text-secondary)" }}>
+                Repuestos verificados para <strong className="text-[var(--text-primary)]">4×4, SUVs y coupés</strong>{" "}
+                + aceites, aditivos y filtros de motor.
+                Búsqueda por compatibilidad, stock real y consulta directa por WhatsApp.
+              </p>
+              <div className="mt-6 flex flex-wrap gap-2">
+                {["Jeep", "Chrysler", "Dodge", "Ford", "Liqui-Moly", "Mopar", "K&N"].map((brand) => (
+                  <span
+                    key={brand}
+                    className="font-mono-tech rounded-sm px-3 py-1.5 text-[10px] transition-colors hover:border-[var(--color-gold)] hover:text-[var(--color-gold)]"
+                    style={{
+                      border: "1px solid var(--border)",
+                      background: "var(--bg-card)",
+                      color: "var(--text-secondary)",
+                    }}
+                  >
+                    {brand}
+                  </span>
+                ))}
+              </div>
             </div>
+            <CatalogFilters filters={filters} options={catalog.options} />
           </div>
-          <CatalogFilters filters={filters} options={catalog.options} />
         </div>
+      </section>
+      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
 
         {catalog.isFallback ? (
           <div
@@ -61,10 +87,15 @@ export default async function TiendaPage({ searchParams }: TiendaPageProps) {
           </div>
         ) : null}
 
-        <div className="mt-8 flex items-center justify-between gap-4">
-          <h2 className="text-2xl font-black uppercase">Productos disponibles</h2>
-          <p className="font-mono text-sm font-black" style={{ color: "var(--text-muted)" }}>
-            {catalog.total} resultados
+        <div className="mt-8 flex items-end justify-between gap-4 border-b pb-4" style={{ borderColor: "var(--border)" }}>
+          <div>
+            <p className="font-mono-tech text-[10px]" style={{ color: "var(--text-muted)" }}>
+              Resultados
+            </p>
+            <h2 className="font-display-kinetic mt-1 text-2xl uppercase">Productos disponibles</h2>
+          </div>
+          <p className="font-mono text-sm font-black" style={{ color: "var(--color-gold)" }}>
+            {catalog.total} {catalog.total === 1 ? "resultado" : "resultados"}
           </p>
         </div>
 
@@ -79,7 +110,7 @@ export default async function TiendaPage({ searchParams }: TiendaPageProps) {
             className="mt-5 p-8 text-center"
             style={{ border: "1px solid var(--border)", background: "var(--bg-card)" }}
           >
-            <h2 className="text-2xl font-black uppercase">Sin resultados</h2>
+            <h2 className="font-display-kinetic text-2xl uppercase">Sin resultados</h2>
             <p className="mt-3" style={{ color: "var(--text-secondary)" }}>
               Ajusta los filtros o escribe por WhatsApp para ubicar el repuesto exacto.
             </p>

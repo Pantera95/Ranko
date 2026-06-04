@@ -1,11 +1,15 @@
-import { Plus } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import Link from "next/link";
 
 import { InvoiceTable } from "@/components/admin/InvoiceTable";
 import { getInvoicesData } from "@/lib/invoices";
 
-export default async function AdminFacturacionPage() {
-  const data = await getInvoicesData();
+type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
+
+export default async function AdminFacturacionPage({ searchParams }: Props) {
+  const sp = await searchParams;
+  const clienteId = typeof sp.clienteId === "string" ? sp.clienteId : undefined;
+  const data = await getInvoicesData(clienteId);
 
   const agingBorder: Record<string, string> = {
     corriente: "var(--border)",
@@ -20,11 +24,12 @@ export default async function AdminFacturacionPage() {
       <section className="mx-auto max-w-7xl">
         <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
           <div>
-            <p className="text-sm font-bold uppercase tracking-[0.18em]" style={{ color: "var(--color-gold)" }}>
+            <p className="font-mono-tech inline-flex items-center gap-2 text-xs" style={{ color: "var(--color-gold)" }}>
+              <span className="block h-px w-6" style={{ background: "var(--color-gold)" }} />
               Finanzas
             </p>
             <div className="mt-3 flex flex-wrap items-center gap-4">
-              <h1 className="text-4xl font-black uppercase">Facturación</h1>
+              <h1 className="font-display-kinetic--tight text-3xl uppercase leading-tight sm:text-4xl">Facturación</h1>
               <Link
                 href="/admin/facturacion/nueva"
                 className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-black uppercase text-black transition hover:opacity-90"
@@ -40,7 +45,7 @@ export default async function AdminFacturacionPage() {
           </div>
 
           <div className="p-4" style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}>
-            <p className="text-xs font-black uppercase tracking-[0.18em]" style={{ color: "var(--text-muted)" }}>
+            <p className="font-mono-tech text-xs" style={{ color: "var(--text-muted)" }}>
               Cartera por aging
             </p>
             {data.aging.length ? (
@@ -71,6 +76,25 @@ export default async function AdminFacturacionPage() {
             )}
           </div>
         </div>
+
+        {data.filterClienteNombre ? (
+          <div
+            className="mt-5 flex items-center gap-3 p-3 text-sm"
+            style={{ border: "1px solid var(--border)", background: "var(--bg-card)" }}
+          >
+            <span style={{ color: "var(--text-muted)" }}>Filtrando por:</span>
+            <span className="font-bold" style={{ color: "var(--text-primary)" }}>
+              {data.filterClienteNombre}
+            </span>
+            <Link
+              href="/admin/facturacion"
+              className="ml-auto inline-flex items-center gap-1 text-xs font-bold transition hover:opacity-70"
+              style={{ color: "var(--text-muted)" }}
+            >
+              <X size={12} /> Quitar filtro
+            </Link>
+          </div>
+        ) : null}
 
         {data.isFallback ? (
           <div

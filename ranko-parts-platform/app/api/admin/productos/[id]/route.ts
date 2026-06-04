@@ -61,6 +61,7 @@ export async function PATCH(request: Request, context: UpdateProductContext) {
     marca?: string;
     codigoOEM?: string | null;
     codigoAftermarket?: string | null;
+    imagenes?: string[];
   };
 
   const data: PatchData = {};
@@ -76,6 +77,34 @@ export async function PATCH(request: Request, context: UpdateProductContext) {
   if (typeof body?.marca === "string" && body.marca.trim()) data.marca = body.marca.trim();
   if (typeof body?.codigoOEM === "string") data.codigoOEM = body.codigoOEM.trim() || null;
   if (typeof body?.codigoAftermarket === "string") data.codigoAftermarket = body.codigoAftermarket.trim() || null;
+
+  // Image URLs — accept a complete array (replace semantics, not patch-merge).
+  // Validates each entry is a non-empty http(s) URL and dedupes while preserving
+  // the caller's order (first occurrence wins).
+  if (Array.isArray(body?.imagenes)) {
+    const seen = new Set<string>();
+    const cleaned: string[] = [];
+    for (const raw of body.imagenes as unknown[]) {
+      if (typeof raw !== "string") continue;
+      const url = raw.trim();
+      if (!url || seen.has(url)) continue;
+      if (!/^https?:\/\/\S+$/i.test(url)) {
+        return Response.json(
+          { ok: false, error: `URL de imagen inválida: ${url.slice(0, 60)}` },
+          { status: 400 },
+        );
+      }
+      seen.add(url);
+      cleaned.push(url);
+    }
+    if (cleaned.length > 12) {
+      return Response.json(
+        { ok: false, error: "Máximo 12 imágenes por producto" },
+        { status: 400 },
+      );
+    }
+    data.imagenes = cleaned;
+  }
 
   if (!Object.keys(data).length) {
     return Response.json({ ok: false, error: "Sin cambios válidos" }, { status: 400 });
@@ -98,6 +127,7 @@ export async function PATCH(request: Request, context: UpdateProductContext) {
         descripcion: true,
         codigoOEM: true,
         codigoAftermarket: true,
+        imagenes: true,
       },
     });
 

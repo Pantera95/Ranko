@@ -22,7 +22,7 @@ export default function AdminError({ error, reset }: Props) {
       >
         <AlertTriangle size={24} style={{ color: "var(--color-danger)" }} />
       </div>
-      <h2 className="mt-5 text-2xl font-black uppercase">Error en el panel</h2>
+      <h2 className="font-display-kinetic--tight mt-5 text-2xl uppercase leading-tight">Error en el panel</h2>
       <p className="mt-2 max-w-sm text-sm leading-6" style={{ color: "var(--text-secondary)" }}>
         No se pudo cargar esta sección. Puede ser un problema temporal de conexión con la base de datos.
       </p>

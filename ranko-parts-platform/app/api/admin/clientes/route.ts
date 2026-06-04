@@ -2,6 +2,14 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { esRolEquipo } from "@/lib/roles";
 
+function generateCodigoReferido(nombre: string): string {
+  const slug = nombre
+    .normalize("NFD").replace(/[̀-ͯ]/g, "")
+    .toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 4).padEnd(3, "X");
+  const rand = Math.random().toString(36).toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 4).padEnd(4, "0");
+  return `REF-${slug}-${rand}`;
+}
+
 const TIPOS_VALIDOS = ["MINORISTA", "TALLER", "DISTRIBUIDOR_LOCAL", "DISTRIBUIDOR_REGIONAL", "VIP"] as const;
 const FUENTES_VALIDAS = ["ADS", "REFERIDO", "ORGANICO", "DIRECTO", "WHATSAPP", "TIENDA_WEB"] as const;
 
@@ -40,6 +48,14 @@ export async function POST(request: Request) {
     return Response.json({ ok: false, error: "Fuente no válida" }, { status: 400 });
   }
 
+  // Generate unique referral code with retry on collision
+  let codigoReferido: string | null = null;
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const candidate = generateCodigoReferido(nombre);
+    const exists = await prisma.cliente.findUnique({ where: { codigoReferido: candidate }, select: { id: true } }).catch(() => null);
+    if (!exists) { codigoReferido = candidate; break; }
+  }
+
   try {
     const cliente = await prisma.cliente.create({
       data: {
@@ -58,6 +74,7 @@ export async function POST(request: Request) {
         scoring: 50,
         activo: true,
         bloqueado: false,
+        codigoReferido,
       },
       select: { id: true, nombre: true, tipo: true },
     });

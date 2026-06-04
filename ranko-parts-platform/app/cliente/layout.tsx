@@ -1,14 +1,19 @@
 import Link from "next/link";
 
+import { auth } from "@/auth";
 import { LogoutButton } from "@/components/auth/LogoutButton";
 import { ClienteNav } from "@/components/layout/ClienteNav";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
+import { getClientePendingCounts } from "@/lib/client-portal";
 
-export default function ClienteLayout({
+export default async function ClienteLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await auth();
+  const counts = await getClientePendingCounts(session?.user?.id);
+
   return (
     <div
       className="min-h-screen"
@@ -37,7 +42,7 @@ export default function ClienteLayout({
           </div>
         </div>
       </header>
-      <ClienteNav />
+      <ClienteNav counts={counts} />
       {children}
     </div>
   );

@@ -34,7 +34,11 @@ export async function POST(request: Request) {
   }
 
   try {
-    // Try to find existing client by telefono; create if not found
+    // Try to find existing client by telefono; create if not found.
+    // For existing clientes we are intentionally conservative: the cliente
+    // record is authoritative and shouldn't be silently rewritten by lead
+    // capture. We only fill in fields that are still blank, and we update
+    // temperatura (which tracks current buying intent, not customer identity).
     let cliente = await prisma.cliente.findFirst({ where: { telefono } });
 
     if (!cliente) {
@@ -51,13 +55,14 @@ export async function POST(request: Request) {
         },
       });
     } else {
-      // Update mutable fields
       cliente = await prisma.cliente.update({
         where: { id: cliente.id },
         data: {
-          nombre,
-          empresa: empresa ?? undefined,
-          ciudad: ciudad ?? undefined,
+          // Preserve nombre/empresa/ciudad unless the existing value is blank
+          ...(cliente.nombre ? {} : { nombre }),
+          ...(cliente.empresa ? {} : empresa ? { empresa } : {}),
+          ...(cliente.ciudad ? {} : ciudad ? { ciudad } : {}),
+          // Fresh lead activity always updates the buying-intent signal
           temperatura,
         },
       });

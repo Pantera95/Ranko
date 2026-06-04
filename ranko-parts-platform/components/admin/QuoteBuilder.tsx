@@ -191,7 +191,7 @@ export function QuoteBuilder({ clientes, productos, isFallback }: QuoteBuilderPr
           style={{ borderBottom: "1px solid var(--border)" }}
         >
           <p
-            className="text-xs font-black uppercase"
+            className="font-mono-tech text-xs"
             style={{ color: "var(--text-secondary)" }}
           >
             Items

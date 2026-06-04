@@ -1,4 +1,5 @@
 import { AlertTriangle, Ban, MessageSquare, PhoneCall, TrendingDown } from "lucide-react"; // Ban kept for bloqueado icon in card header
+import Link from "next/link";
 
 import { BloquearButton } from "@/components/admin/BloquearButton";
 import { getDeudasData } from "@/lib/deudas";
@@ -62,10 +63,10 @@ export default async function AdminDeudasPage() {
 
         {/* Header */}
         <div>
-          <p className="text-sm font-bold uppercase tracking-[0.18em]" style={{ color: "var(--color-gold)" }}>
+          <p className="font-mono-tech text-xs" style={{ color: "var(--color-gold)" }}>
             Finanzas
           </p>
-          <h1 className="mt-2 text-4xl font-black uppercase">Panel de deudas</h1>
+          <h1 className="mt-2 font-display-kinetic--tight text-3xl uppercase leading-tight sm:text-4xl">Panel de deudas</h1>
           <p className="mt-2 text-sm leading-6" style={{ color: "var(--text-secondary)" }}>
             Antigüedad de saldos, gestión de cobranza y bloqueo comercial por cliente.
           </p>
@@ -105,7 +106,7 @@ export default async function AdminDeudasPage() {
 
         {/* Aging breakdown */}
         <section className="mt-8">
-          <h2 className="text-xs font-black uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+          <h2 className="font-mono-tech text-xs" style={{ color: "var(--text-muted)" }}>
             Distribución de antigüedad
           </h2>
           <div className="mt-3 grid gap-3 sm:grid-cols-5">
@@ -165,7 +166,7 @@ export default async function AdminDeudasPage() {
         {/* Client debt table */}
         <section className="mt-8">
           <div className="flex items-center justify-between">
-            <h2 className="text-xs font-black uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+            <h2 className="font-mono-tech text-xs" style={{ color: "var(--text-muted)" }}>
               Cartera por cliente ({clientes.length})
             </h2>
             <p className="text-xs" style={{ color: "var(--text-muted)" }}>
@@ -214,7 +215,13 @@ function DeudaCard({ cliente: c }: { cliente: DeudaCliente }) {
             </span>
           )}
           <div>
-            <p className="font-black uppercase">{c.nombre}</p>
+            <Link
+              href={`/admin/clientes/${c.id}`}
+              className="font-black uppercase transition hover:opacity-80"
+              style={{ color: "var(--text-primary)" }}
+            >
+              {c.nombre}
+            </Link>
             {c.empresa && (
               <p className="text-xs" style={{ color: "var(--text-muted)" }}>{c.empresa}</p>
             )}
@@ -239,7 +246,13 @@ function DeudaCard({ cliente: c }: { cliente: DeudaCliente }) {
           >
             <div className="flex items-center gap-3">
               <BucketBadge bucket={f.bucket} />
-              <p className="font-mono font-bold" style={{ color: "var(--text-secondary)" }}>{f.numero}</p>
+              <Link
+                href={`/admin/facturacion/${f.id}`}
+                className="font-mono font-bold transition hover:opacity-80"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                {f.numero}
+              </Link>
             </div>
             <div className="flex items-center gap-4">
               {f.diasVencida > 0 && (

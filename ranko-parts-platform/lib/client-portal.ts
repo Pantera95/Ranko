@@ -11,6 +11,16 @@ export type ClientPortalData = {
     value: string;
     helper: string;
   }[];
+  /**
+   * Raw counts for "quick action" badges on the portal home. The same numbers
+   * are formatted into the `metrics` array for the dashboard cards above, but
+   * the UI also needs them as numbers to decide which actions need a red dot.
+   */
+  counts: {
+    ordenesActivas: number;
+    facturasPendientes: number;
+    cotizacionesPendientes: number;
+  };
   vehicles: {
     marca: string;
     modelo: string;
@@ -81,6 +91,11 @@ export async function getClientPortalData(userId?: string): Promise<ClientPortal
       clienteNombre: cliente.nombre,
       empresa: cliente.empresa,
       codigoReferido: cliente.codigoReferido,
+      counts: {
+        ordenesActivas,
+        facturasPendientes,
+        cotizacionesPendientes,
+      },
       metrics: [
         {
           label: "Pedidos activos",
@@ -111,12 +126,63 @@ export async function getClientPortalData(userId?: string): Promise<ClientPortal
   }
 }
 
+/**
+ * Lightweight count fetcher used by the cliente layout to badge nav items.
+ * Reuses the same queries as getClientPortalData but skips the formatting,
+ * vehicles, and saldo aggregation — just the three numbers the navbar needs.
+ *
+ * Returns zeros if the user is not logged in / has no cliente record so the
+ * navbar simply renders without badges.
+ */
+export async function getClientePendingCounts(userId?: string): Promise<{
+  ordenesActivas: number;
+  facturasPendientes: number;
+  cotizacionesPendientes: number;
+}> {
+  const ZERO = { ordenesActivas: 0, facturasPendientes: 0, cotizacionesPendientes: 0 };
+  if (!userId) return ZERO;
+
+  try {
+    const cliente = await prisma.cliente.findUnique({
+      where: { usuarioPortalId: userId },
+      select: { id: true },
+    });
+    if (!cliente) return ZERO;
+
+    const [ordenesActivas, facturasPendientes, cotizacionesPendientes] = await Promise.all([
+      prisma.orden.count({
+        where: {
+          clienteId: cliente.id,
+          estado: { in: [EstadoOrden.CONFIRMADO, EstadoOrden.EN_PREPARACION, EstadoOrden.EN_CAMINO] },
+        },
+      }),
+      prisma.factura.count({
+        where: {
+          clienteId: cliente.id,
+          estado: { in: [EstadoFactura.PENDIENTE, EstadoFactura.PARCIAL, EstadoFactura.VENCIDA] },
+        },
+      }),
+      prisma.cotizacion.count({
+        where: {
+          clienteId: cliente.id,
+          estado: { in: [EstadoCotizacion.ENVIADA, EstadoCotizacion.BORRADOR] },
+        },
+      }),
+    ]);
+
+    return { ordenesActivas, facturasPendientes, cotizacionesPendientes };
+  } catch {
+    return ZERO;
+  }
+}
+
 function fallbackClientPortalData(): ClientPortalData {
   return {
     isFallback: true,
     clienteNombre: "Cliente Ranko Parts",
     empresa: null,
     codigoReferido: "RANKO-DEMO",
+    counts: { ordenesActivas: 0, facturasPendientes: 0, cotizacionesPendientes: 0 },
     metrics: [
       { label: "Pedidos activos", value: "0", helper: "Esperando conexion a Postgres" },
       { label: "Facturas pendientes", value: "0", helper: "$0.00" },

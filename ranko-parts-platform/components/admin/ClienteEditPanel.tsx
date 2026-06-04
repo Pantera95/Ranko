@@ -39,6 +39,8 @@ const TEMP_OPTIONS: { value: Temperatura; label: string; cls: string }[] = [
   { value: "FRIO",     label: "Frío",     cls: "bg-blue-100 text-blue-700" },
 ];
 
+type VendedorOption = { id: string; nombre: string; rol: string };
+
 type Props = {
   clienteId: string;
   initial: {
@@ -54,11 +56,16 @@ type Props = {
     temperatura: Temperatura;
     condicionPago: string | null;
     limiteCredito: number;
+    scoring: number;
     notas: string | null;
+    vendedorId: string | null;
+    vendedorNombre: string | null;
+    codigoReferido: string | null;
   };
+  vendedores: VendedorOption[];
 };
 
-export function ClienteEditPanel({ clienteId, initial }: Props) {
+export function ClienteEditPanel({ clienteId, initial, vendedores }: Props) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({
@@ -74,6 +81,9 @@ export function ClienteEditPanel({ clienteId, initial }: Props) {
     temperatura: initial.temperatura,
     condicionPago: initial.condicionPago ?? "",
     limiteCredito: String(initial.limiteCredito),
+    scoring: String(initial.scoring),
+    vendedorId: initial.vendedorId ?? "",
+    codigoReferido: initial.codigoReferido ?? "",
     notas: initial.notas ?? "",
   });
   const [saving, setSaving] = useState(false);
@@ -99,6 +109,9 @@ export function ClienteEditPanel({ clienteId, initial }: Props) {
       temperatura: initial.temperatura,
       condicionPago: initial.condicionPago ?? "",
       limiteCredito: String(initial.limiteCredito),
+      scoring: String(initial.scoring),
+      vendedorId: initial.vendedorId ?? "",
+      codigoReferido: initial.codigoReferido ?? "",
       notas: initial.notas ?? "",
     });
     setError("");
@@ -116,6 +129,9 @@ export function ClienteEditPanel({ clienteId, initial }: Props) {
         ...form,
         editMode: true,
         limiteCredito: parseFloat(form.limiteCredito) || 0,
+        scoring: Math.min(100, Math.max(0, parseInt(form.scoring, 10) || 0)),
+        vendedorId: form.vendedorId || null,
+        codigoReferido: form.codigoReferido.trim().toUpperCase() || null,
       }),
     });
 
@@ -148,7 +164,7 @@ export function ClienteEditPanel({ clienteId, initial }: Props) {
         className="flex items-center justify-between gap-3 px-5 py-3"
         style={{ borderBottom: "1px solid var(--border)", background: "var(--bg-elevated)" }}
       >
-        <p className="text-xs font-black uppercase tracking-widest" style={{ color: "var(--text-primary)" }}>
+        <p className="font-mono-tech text-xs" style={{ color: "var(--text-primary)" }}>
           Editar ficha
         </p>
         <div className="flex items-center gap-2">
@@ -290,6 +306,33 @@ export function ClienteEditPanel({ clienteId, initial }: Props) {
               </div>
             </div>
 
+            {/* Scoring */}
+            <div>
+              <label className={labelCls} style={labelStyle}>
+                Scoring crediticio (0 – 100)
+              </label>
+              <div className="mt-2 flex items-center gap-3">
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  step="1"
+                  value={form.scoring}
+                  onChange={field("scoring")}
+                  className="flex-1 accent-[var(--color-gold)]"
+                />
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={form.scoring}
+                  onChange={field("scoring")}
+                  className="h-10 w-16 px-2 text-center font-mono text-sm font-black outline-none transition focus:border-[var(--color-gold)]"
+                  style={inputStyle}
+                />
+              </div>
+            </div>
+
             {/* Fuente */}
             <div>
               <p className={labelCls} style={labelStyle}>Fuente</p>
@@ -309,6 +352,51 @@ export function ClienteEditPanel({ clienteId, initial }: Props) {
                     {opt.label}
                   </button>
                 ))}
+              </div>
+            </div>
+
+            {/* Vendedor asignado */}
+            <div>
+              <label className={labelCls} style={labelStyle}>Vendedor asignado</label>
+              <select
+                value={form.vendedorId}
+                onChange={(e) => setForm((f) => ({ ...f, vendedorId: e.target.value }))}
+                className="mt-1.5 h-10 w-full px-3 text-sm outline-none transition focus:border-[var(--color-gold)]"
+                style={inputStyle}
+              >
+                <option value="">— Sin asignar —</option>
+                {vendedores.map((v) => (
+                  <option key={v.id} value={v.id}>
+                    {v.nombre} ({v.rol.replace("_", " ")})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Código de referido */}
+            <div>
+              <label className={labelCls} style={labelStyle}>Código de referido</label>
+              <div className="mt-1.5 flex gap-2">
+                <input
+                  type="text"
+                  value={form.codigoReferido}
+                  onChange={field("codigoReferido")}
+                  placeholder="Ej: REF-TALL-AB12"
+                  className={`${inputCls} mt-0 flex-1 font-mono uppercase`}
+                  style={inputStyle}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const slug = initial.nombre.normalize("NFD").replace(/[̀-ͯ]/g, "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 4).padEnd(3, "X");
+                    const rand = Math.random().toString(36).toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 4).padEnd(4, "0");
+                    setForm((f) => ({ ...f, codigoReferido: `REF-${slug}-${rand}` }));
+                  }}
+                  className="h-10 shrink-0 px-3 text-[10px] font-black uppercase transition hover:opacity-80"
+                  style={{ border: "1px solid var(--border)", background: "var(--bg-elevated)", color: "var(--text-muted)" }}
+                >
+                  Generar
+                </button>
               </div>
             </div>
 
@@ -342,6 +430,9 @@ export function ClienteEditPanel({ clienteId, initial }: Props) {
               { label: "RIF", value: initial.rif ?? "—" },
               { label: "Condición pago", value: initial.condicionPago ?? "—" },
               { label: "Límite crédito", value: `$${initial.limiteCredito.toLocaleString("en-US")}` },
+              { label: "Scoring", value: `${initial.scoring}/100` },
+              { label: "Vendedor", value: initial.vendedorNombre ?? "Sin asignar" },
+              { label: "Código referido", value: initial.codigoReferido ?? "—" },
               { label: "Fuente", value: initial.fuente },
               { label: "Temperatura", value: initial.temperatura },
             ].map((row) => (

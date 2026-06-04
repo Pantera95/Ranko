@@ -159,7 +159,7 @@ export function NuevoLeadModal() {
                 <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: "var(--color-gold)" }}>
                   CRM
                 </p>
-                <h2 className="mt-0.5 text-xl font-black uppercase">Nuevo lead</h2>
+                <h2 className="mt-0.5 font-display-kinetic text-xl uppercase">Nuevo lead</h2>
               </div>
               <button
                 type="button"

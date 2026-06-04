@@ -13,10 +13,11 @@ export default async function AdminOrdenesPage() {
       <section className="mx-auto max-w-7xl">
         <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
           <div>
-            <p className="text-sm font-bold uppercase tracking-[0.18em]" style={{ color: "var(--color-gold)" }}>
+            <p className="font-mono-tech inline-flex items-center gap-2 text-xs" style={{ color: "var(--color-gold)" }}>
+              <span className="block h-px w-6" style={{ background: "var(--color-gold)" }} />
               Operaciones
             </p>
-            <h1 className="mt-3 text-4xl font-black uppercase">Ordenes</h1>
+            <h1 className="font-display-kinetic--tight mt-3 text-3xl uppercase leading-tight sm:text-4xl">Órdenes</h1>
             <p className="mt-3 max-w-3xl leading-7" style={{ color: "var(--text-secondary)" }}>
               Control de despachos desde confirmacion hasta entrega. Avanza estados,
               registra responsable y revisa el historial completo de cada orden.
@@ -24,7 +25,7 @@ export default async function AdminOrdenesPage() {
           </div>
 
           <div className="p-4" style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}>
-            <p className="text-xs font-black uppercase tracking-[0.18em]" style={{ color: "var(--text-muted)" }}>
+            <p className="font-mono-tech text-xs" style={{ color: "var(--text-muted)" }}>
               Ordenes en curso
             </p>
             <div className="mt-4 grid gap-3">

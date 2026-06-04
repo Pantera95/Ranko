@@ -18,10 +18,10 @@ export default function NuevoProductoPage() {
         </div>
 
         <div className="mt-4">
-          <p className="text-sm font-bold uppercase tracking-[0.18em] text-[var(--color-gold)]">
+          <p className="font-mono-tech text-xs text-[var(--color-gold)]">
             Catálogo
           </p>
-          <h1 className="mt-2 text-4xl font-black uppercase">Nuevo producto</h1>
+          <h1 className="mt-2 font-display-kinetic--tight text-3xl uppercase leading-tight sm:text-4xl">Nuevo producto</h1>
           <p className="mt-3 leading-7" style={{ color: "var(--text-secondary)" }}>
             Crea un nuevo SKU en el catálogo. Podrás agregar compatibilidades e inventario
             por almacén desde el detalle del producto.

@@ -28,14 +28,21 @@ export function PublicNavbar() {
         }}
       >
         <nav className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          {/* Logo */}
+          {/* Logo with subtle gold accent bar */}
           <Link
             href="/"
-            className="font-mono text-lg font-black uppercase"
+            className="group flex items-center gap-2 font-mono text-lg font-black uppercase tracking-tight"
             style={{ color: "var(--text-primary)" }}
             onClick={() => setOpen(false)}
           >
-            Ranko <span style={{ color: "var(--color-gold)" }}>Parts</span>
+            <span
+              aria-hidden="true"
+              className="block h-6 w-1 transition-all group-hover:h-8 group-hover:w-1.5"
+              style={{ background: "var(--color-gold)" }}
+            />
+            <span>
+              Ranko <span style={{ color: "var(--color-gold)" }}>Parts</span>
+            </span>
           </Link>
 
           {/* Desktop links */}

@@ -22,6 +22,7 @@ export type QuoteRow = {
 };
 
 export type QuotesListData = {
+  filterClienteNombre?: string;
   quotes: QuoteRow[];
   metrics: { label: string; value: string; helper: string; danger?: boolean }[];
   isFallback: boolean;
@@ -104,9 +105,10 @@ const fallbackBuilderData: QuoteBuilderData = {
 
 // ─── Data functions ───────────────────────────────────────────────────────────
 
-export async function getQuotesListData(): Promise<QuotesListData> {
+export async function getQuotesListData(clienteId?: string): Promise<QuotesListData> {
   try {
     const quotes = await prisma.cotizacion.findMany({
+      where: clienteId ? { clienteId } : undefined,
       orderBy: { createdAt: "desc" },
       take: 200,
       include: {
@@ -114,6 +116,7 @@ export async function getQuotesListData(): Promise<QuotesListData> {
         usuario: { select: { nombre: true } },
       },
     });
+    const filterClienteNombre = clienteId && quotes.length > 0 ? quotes[0].cliente.nombre : undefined;
 
     const rows: QuoteRow[] = quotes.map((q) => ({
       id: q.id,
@@ -131,7 +134,7 @@ export async function getQuotesListData(): Promise<QuotesListData> {
       createdAt: q.createdAt.toISOString().slice(0, 10),
     }));
 
-    return buildListData(rows, false);
+    return { ...buildListData(rows, false), filterClienteNombre };
   } catch {
     console.warn("Cotizaciones fallback activo: base de datos no disponible.");
     return buildListData(fallbackQuotes, true);

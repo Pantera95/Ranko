@@ -39,10 +39,10 @@ export default async function AdminReportesPage() {
     <main className="p-4 sm:p-6" style={{ color: "var(--text-primary)" }}>
       <section className="mx-auto max-w-7xl">
         <div>
-          <p className="text-sm font-bold uppercase tracking-[0.18em]" style={{ color: "var(--color-gold)" }}>
+          <p className="font-mono-tech text-xs" style={{ color: "var(--color-gold)" }}>
             Inteligencia
           </p>
-          <h1 className="mt-3 text-4xl font-black uppercase">Reportes y BI</h1>
+          <h1 className="mt-3 font-display-kinetic--tight text-3xl uppercase leading-tight sm:text-4xl">Reportes y BI</h1>
           <p className="mt-3 max-w-3xl leading-7" style={{ color: "var(--text-secondary)" }}>
             Ultimos 12 meses. Ventas, margen, rotacion de inventario, embudo de leads y
             segmentacion de clientes.

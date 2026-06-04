@@ -236,7 +236,7 @@ export function InvoiceBuilder({ clientes, productos, isFallback }: Props) {
           className="flex items-center justify-between px-5 py-3"
           style={{ borderBottom: "1px solid var(--border)" }}
         >
-          <p className="text-xs font-black uppercase" style={{ color: "var(--text-secondary)" }}>
+          <p className="font-mono-tech text-xs" style={{ color: "var(--text-secondary)" }}>
             Items
           </p>
           <button

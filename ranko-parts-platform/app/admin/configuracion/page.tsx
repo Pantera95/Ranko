@@ -174,10 +174,10 @@ export default function AdminConfiguracionPage() {
         {/* Header */}
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-sm font-bold uppercase tracking-[0.18em]" style={{ color: "var(--color-gold)" }}>
+            <p className="font-mono-tech text-xs" style={{ color: "var(--color-gold)" }}>
               Sistema
             </p>
-            <h1 className="mt-2 text-4xl font-black uppercase">Configuración</h1>
+            <h1 className="mt-2 font-display-kinetic--tight text-3xl uppercase leading-tight sm:text-4xl">Configuración</h1>
             <p className="mt-2 text-sm leading-6" style={{ color: "var(--text-secondary)" }}>
               Activa o desactiva módulos y funcionalidades de la plataforma.
             </p>
@@ -229,7 +229,7 @@ export default function AdminConfiguracionPage() {
                 style={{ borderBottom: "1px solid var(--border)", background: "var(--bg-elevated)" }}
               >
                 <span style={{ color: "var(--color-gold)" }}>{section.icon}</span>
-                <p className="text-xs font-black uppercase tracking-widest" style={{ color: "var(--text-primary)" }}>
+                <p className="font-mono-tech text-xs" style={{ color: "var(--text-primary)" }}>
                   {section.title}
                 </p>
                 <span className="ml-auto text-xs" style={{ color: "var(--text-muted)" }}>

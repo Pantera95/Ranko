@@ -11,10 +11,11 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
+import { ExternalLink, FileText } from "lucide-react";
+import Link from "next/link";
 import type { EstadoLead } from "@prisma/client";
 
 import type { PipelineLead, PipelineStage } from "@/lib/crm";
-import { cn } from "@/lib/utils";
 
 type PipelineKanbanProps = {
   initialStages: PipelineStage[];
@@ -161,6 +162,30 @@ function LeadCard({ lead, stageId }: { lead: PipelineLead; stageId: EstadoLead }
       {lead.notas ? (
         <p className="mt-4 text-xs leading-5" style={{ color: "var(--text-muted)" }}>{lead.notas}</p>
       ) : null}
+
+      {/* Action footer — stopPropagation prevents the dnd handler from
+          eating the click while keeping the rest of the card draggable. */}
+      <div
+        className="mt-3 flex flex-wrap gap-2 pt-3"
+        style={{ borderTop: "1px solid var(--border-subtle)" }}
+        onPointerDown={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
+      >
+        <Link
+          href={`/admin/clientes/${lead.clienteId}`}
+          className="inline-flex items-center gap-1 rounded px-2 py-1 text-[10px] font-bold uppercase transition hover:opacity-80"
+          style={{ border: "1px solid var(--border)", color: "var(--text-muted)" }}
+        >
+          <ExternalLink size={10} /> Abrir cliente
+        </Link>
+        <Link
+          href={`/admin/cotizaciones/nueva?clienteId=${lead.clienteId}`}
+          className="inline-flex items-center gap-1 rounded px-2 py-1 text-[10px] font-black uppercase text-black transition hover:opacity-90"
+          style={{ background: "var(--color-gold)" }}
+        >
+          <FileText size={10} /> Cotizar
+        </Link>
+      </div>
     </article>
   );
 }

@@ -1,6 +1,7 @@
 import { Receipt } from "lucide-react";
 
 import { auth } from "@/auth";
+import { ReportarPagoButton } from "@/components/public/ReportarPagoButton";
 import { getClienteFacturas } from "@/lib/client-sections";
 import { cn } from "@/lib/utils";
 import type { EstadoFactura } from "@prisma/client";
@@ -34,10 +35,10 @@ export default async function ClienteFacturasPage() {
   return (
     <main className="p-4 sm:p-6" style={{ color: "var(--text-primary)" }}>
       <section className="mx-auto max-w-4xl">
-        <p className="text-sm font-bold uppercase tracking-[0.18em]" style={{ color: "var(--color-gold)" }}>
+        <p className="font-mono-tech text-xs" style={{ color: "var(--color-gold)" }}>
           Portal del cliente
         </p>
-        <h1 className="mt-2 text-4xl font-black uppercase">Mis facturas</h1>
+        <h1 className="mt-2 font-display-kinetic--tight text-3xl uppercase leading-tight sm:text-4xl">Mis facturas</h1>
         <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
           Estado de cuenta y deuda pendiente con Ranko Parts.
         </p>
@@ -96,13 +97,13 @@ export default async function ClienteFacturasPage() {
         {/* Facturas pendientes / vencidas destacadas */}
         {(pendientes.length > 0 || vencidas.length > 0) ? (
           <section className="mt-8">
-            <h2 className="text-xs font-black uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+            <h2 className="font-mono-tech text-xs" style={{ color: "var(--text-muted)" }}>
               Requieren pago
             </h2>
             <div className="mt-3 grid gap-3">
               {[...vencidas, ...pendientes].map((f) => (
                 <article
-                  className="flex items-center justify-between gap-4 p-5"
+                  className="p-5"
                   key={f.id}
                   style={
                     f.estado === "VENCIDA"
@@ -110,37 +111,49 @@ export default async function ClienteFacturasPage() {
                       : { border: "1px solid var(--border)", background: "var(--bg-card)" }
                   }
                 >
-                  <div className="flex items-start gap-4">
-                    <div
-                      className="mt-0.5 rounded-full p-2"
-                      style={{ background: "var(--bg-elevated)" }}
-                    >
-                      <Receipt size={18} style={{ color: "var(--text-secondary)" }} />
-                    </div>
-                    <div>
-                      <p className="font-mono font-black">{f.numero}</p>
-                      <p className="mt-0.5 text-xs" style={{ color: "var(--text-muted)" }}>
-                        Emitida {f.fechaEmision} · Vence {f.fechaVencimiento}
-                      </p>
-                      {f.diasVencida > 0 ? (
-                        <p className="mt-1 text-xs font-bold text-red-600">
-                          +{f.diasVencida} dias de vencimiento
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-start gap-4">
+                      <div
+                        className="mt-0.5 rounded-full p-2"
+                        style={{ background: "var(--bg-elevated)" }}
+                      >
+                        <Receipt size={18} style={{ color: "var(--text-secondary)" }} />
+                      </div>
+                      <div>
+                        <p className="font-mono font-black">{f.numero}</p>
+                        <p className="mt-0.5 text-xs" style={{ color: "var(--text-muted)" }}>
+                          Emitida {f.fechaEmision} · Vence {f.fechaVencimiento}
                         </p>
-                      ) : null}
+                        {f.diasVencida > 0 ? (
+                          <p className="mt-1 text-xs font-bold text-red-600">
+                            +{f.diasVencida} dias de vencimiento
+                          </p>
+                        ) : null}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-mono text-lg font-black text-red-600">{f.saldoPendiente}</p>
+                      <p className="mt-0.5 text-xs" style={{ color: "var(--text-muted)" }}>saldo pendiente</p>
+                      <span
+                        className={cn(
+                          "mt-2 inline-block rounded px-2 py-1 text-[10px] font-black uppercase",
+                          ESTADO_STYLES[f.estado],
+                        )}
+                      >
+                        {ESTADO_LABELS[f.estado]}
+                      </span>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-mono text-lg font-black text-red-600">{f.saldoPendiente}</p>
-                    <p className="mt-0.5 text-xs" style={{ color: "var(--text-muted)" }}>saldo pendiente</p>
-                    <span
-                      className={cn(
-                        "mt-2 inline-block rounded px-2 py-1 text-[10px] font-black uppercase",
-                        ESTADO_STYLES[f.estado],
-                      )}
-                    >
-                      {ESTADO_LABELS[f.estado]}
-                    </span>
-                  </div>
+                  {!data.isFallback && (
+                    <div className="mt-3 flex justify-end">
+                      <ReportarPagoButton
+                        facturaId={f.id}
+                        numero={f.numero}
+                        saldoPendiente={f.saldoPendiente}
+                        saldoNum={f.saldoNum}
+                      />
+                    </div>
+                  )}
                 </article>
               ))}
             </div>
@@ -150,16 +163,16 @@ export default async function ClienteFacturasPage() {
               style={{ border: "1px solid var(--border)", background: "var(--bg-elevated)" }}
             >
               <p className="text-sm font-bold" style={{ color: "var(--text-secondary)" }}>
-                Para registrar tu pago contacta a tu vendedor
+                ¿Prefieres enviar el comprobante manualmente?
               </p>
               <a
-                className="mt-3 inline-block px-6 py-2.5 text-sm font-black text-black transition hover:opacity-90"
+                className="mt-3 inline-block px-6 py-2.5 text-sm font-bold uppercase transition hover:opacity-80"
                 href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}?text=Hola%2C+quiero+registrar+un+pago`}
                 rel="noopener noreferrer"
-                style={{ background: "var(--color-gold)" }}
+                style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}
                 target="_blank"
               >
-                Enviar comprobante por WhatsApp
+                Enviar por WhatsApp
               </a>
             </div>
           </section>
@@ -167,7 +180,7 @@ export default async function ClienteFacturasPage() {
 
         {/* Tabla completa */}
         <section className="mt-10">
-          <h2 className="text-xs font-black uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+          <h2 className="font-mono-tech text-xs" style={{ color: "var(--text-muted)" }}>
             Historial completo
           </h2>
           <div

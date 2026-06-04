@@ -11,10 +11,10 @@ export default async function CrmPage() {
       <section className="mx-auto max-w-[1800px]">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-sm font-bold uppercase tracking-[0.18em]" style={{ color: "var(--color-gold)" }}>
+            <p className="font-mono-tech text-xs" style={{ color: "var(--color-gold)" }}>
               Ventas
             </p>
-            <h1 className="mt-3 text-4xl font-black uppercase">CRM / Pipeline</h1>
+            <h1 className="mt-3 font-display-kinetic--tight text-3xl uppercase leading-tight sm:text-4xl">CRM / Pipeline</h1>
           </div>
           <NuevoLeadModal />
         </div>

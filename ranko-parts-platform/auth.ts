@@ -55,19 +55,65 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             rol: usuario.rol,
           };
         } catch {
-          // DB not available — allow demo credentials for preview/development
-          const DEMO_EMAIL = "admin@rankoparts.com";
-          const DEMO_PASSWORD = "RankoAdmin2026!";
-          if (
-            parsed.data.email.toLowerCase() === DEMO_EMAIL &&
-            parsed.data.password === DEMO_PASSWORD
-          ) {
-            return {
+          // DB not available — allow demo credentials for preview/development.
+          // Each role has a fixed password so the entire platform can be
+          // tested end-to-end without a live database connection.
+          const DEMO_ACCOUNTS: Array<{
+            email: string;
+            password: string;
+            id: string;
+            name: string;
+            rol: RolUsuarioApp;
+          }> = [
+            {
+              email: "admin@rankoparts.com",
+              password: "RankoAdmin2026!",
               id: "demo-admin",
               name: "Admin Demo",
-              email: DEMO_EMAIL,
+              rol: "MASTER_ADMIN",
+            },
+            {
+              email: "vendedor@rankoparts.com",
+              password: "RankoVendedor2026!",
+              id: "demo-vendedor",
+              name: "Vendedor Demo",
+              rol: "VENDEDOR",
+            },
+            {
+              email: "almacen@rankoparts.com",
+              password: "RankoAlmacen2026!",
+              id: "demo-almacen",
+              name: "Almacén Demo",
+              rol: "ALMACEN",
+            },
+            {
+              email: "viewer@rankoparts.com",
+              password: "RankoViewer2026!",
+              id: "demo-viewer",
+              name: "Viewer Demo",
+              rol: "VIEWER",
+            },
+            {
+              email: "cliente@rankoparts.com",
+              password: "RankoCliente2026!",
+              id: "demo-cliente-user",
+              name: "Cliente Demo",
+              rol: "CLIENTE",
+            },
+          ];
+
+          const match = DEMO_ACCOUNTS.find(
+            (a) =>
+              a.email === parsed.data.email.toLowerCase() &&
+              a.password === parsed.data.password,
+          );
+          if (match) {
+            return {
+              id: match.id,
+              name: match.name,
+              email: match.email,
               image: null,
-              rol: "MASTER_ADMIN" as RolUsuarioApp,
+              rol: match.rol,
             };
           }
           return null;

@@ -128,7 +128,7 @@ export function AvanzarOrdenPanel({ ordenId, estado }: Props) {
       className="mt-4 p-4"
       style={{ border: "1px solid var(--border)", background: "var(--bg-card)" }}
     >
-      <p className="text-xs font-black uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+      <p className="font-mono-tech text-xs" style={{ color: "var(--text-muted)" }}>
         Gestionar estado
       </p>
 

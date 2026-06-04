@@ -31,6 +31,7 @@ export type ClienteDetail = {
   activo: boolean;
   codigoReferido: string | null;
   vendedorNombre: string | null;
+  vendedorId: string | null;
   createdAt: string;
 
   vehiculos: {
@@ -39,7 +40,10 @@ export type ClienteDetail = {
     modelo: string;
     anio: number;
     motor: string | null;
+    color: string | null;
     placa: string | null;
+    vin: string | null;
+    notas: string | null;
   }[];
 
   ultimasFacturas: {
@@ -74,6 +78,11 @@ export type ClienteDetail = {
     cotizacionesTotal: number;
     cotizacionesAceptadas: number;
   };
+
+  // Portal access
+  portalActivo: boolean;
+  portalEmail: string | null;
+  portalUsuarioId: string | null;
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -104,10 +113,14 @@ const FALLBACK: ClienteDetail = {
   activo: true,
   codigoReferido: "REF-TSM-001",
   vendedorNombre: "Vendedor Demo",
+  vendedorId: null,
   createdAt: "2025-11-01",
+  portalActivo: false,
+  portalEmail: null,
+  portalUsuarioId: null,
   vehiculos: [
-    { id: "v1", marca: "Jeep", modelo: "Grand Cherokee", anio: 2019, motor: "3.6L V6", placa: "ABC-123" },
-    { id: "v2", marca: "Dodge", modelo: "RAM 1500", anio: 2021, motor: "5.7L V8", placa: "XYZ-789" },
+    { id: "v1", marca: "Jeep", modelo: "Grand Cherokee", anio: 2019, motor: "3.6L V6", color: null, placa: "ABC-123", vin: null, notas: null },
+    { id: "v2", marca: "Dodge", modelo: "RAM 1500", anio: 2021, motor: "5.7L V8", color: null, placa: "XYZ-789", vin: null, notas: null },
   ],
   ultimasFacturas: [
     { id: "f1", numero: "FAC-0041", total: 1240.00, saldo: 0, estado: "PAGADA", fechaEmision: "2026-05-01", fechaVencimiento: "2026-05-31" },
@@ -158,9 +171,10 @@ export async function getClienteDetail(id: string): Promise<ClienteDetail | null
         activo: true,
         codigoReferido: true,
         createdAt: true,
-        usuarioAsignado: { select: { nombre: true } },
+        usuarioAsignado: { select: { id: true, nombre: true } },
+        usuarioPortal: { select: { id: true, email: true, activo: true } },
         vehiculos: {
-          select: { id: true, marca: true, modelo: true, anio: true, motor: true, placa: true },
+          select: { id: true, marca: true, modelo: true, anio: true, motor: true, color: true, placa: true, vin: true, notas: true },
           orderBy: { anio: "desc" },
         },
         facturas: {
@@ -227,6 +241,10 @@ export async function getClienteDetail(id: string): Promise<ClienteDetail | null
       activo: c.activo,
       codigoReferido: c.codigoReferido ?? null,
       vendedorNombre: c.usuarioAsignado?.nombre ?? null,
+      vendedorId: c.usuarioAsignado?.id ?? null,
+      portalActivo: c.usuarioPortal?.activo ?? false,
+      portalEmail: c.usuarioPortal?.email ?? null,
+      portalUsuarioId: c.usuarioPortal?.id ?? null,
       createdAt: fmt(c.createdAt),
       vehiculos: c.vehiculos.map((v) => ({
         id: v.id,
@@ -234,7 +252,10 @@ export async function getClienteDetail(id: string): Promise<ClienteDetail | null
         modelo: v.modelo,
         anio: v.anio,
         motor: v.motor ?? null,
+        color: v.color ?? null,
         placa: v.placa ?? null,
+        vin: v.vin ?? null,
+        notas: v.notas ?? null,
       })),
       ultimasFacturas: c.facturas.map((f) => ({
         id: f.id,

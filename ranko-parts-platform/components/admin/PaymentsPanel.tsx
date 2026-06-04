@@ -174,7 +174,7 @@ export function PaymentsPanel({
             className="mt-4 p-4"
             style={{ border: "1px solid var(--border)", background: "var(--bg-card)" }}
           >
-            <p className="text-xs font-black uppercase tracking-widest text-[var(--color-gold)]">
+            <p className="font-mono-tech text-xs text-[var(--color-gold)]">
               {pendientesVerif.length} pago{pendientesVerif.length !== 1 ? "s" : ""} por verificar
             </p>
             <div className="mt-3 grid gap-3">
@@ -350,7 +350,7 @@ export function PaymentsPanel({
           style={{ border: "1px solid var(--border)", background: "var(--bg-card)" }}
         >
           <p
-            className="text-xs font-black uppercase tracking-[0.18em]"
+            className="font-mono-tech text-xs"
             style={{ color: "var(--text-secondary)" }}
           >
             Registrar pago

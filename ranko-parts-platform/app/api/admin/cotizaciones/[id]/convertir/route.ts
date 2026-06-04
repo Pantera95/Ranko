@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { generateInvoiceNumber } from "@/lib/quotes";
 import { esRolEquipo } from "@/lib/roles";
+import { checkStockAvailability, deductStockForSale } from "@/lib/stock-deduction";
 
 type ConvertirContext = { params: Promise<{ id: string }> };
 
@@ -42,6 +43,15 @@ export async function POST(_request: Request, context: ConvertirContext) {
     fechaVencimiento.setDate(fechaVencimiento.getDate() + 30);
 
     const result = await prisma.$transaction(async (tx) => {
+      // Validate inventory before committing
+      const shortages = await checkStockAvailability(
+        tx,
+        cotizacion.items.map((i) => ({ productoId: i.productoId, cantidad: i.cantidad })),
+      );
+      if (shortages.length > 0) {
+        throw Object.assign(new Error("insufficient_stock"), { shortages });
+      }
+
       const factura = await tx.factura.create({
         data: {
           numero,
@@ -74,6 +84,12 @@ export async function POST(_request: Request, context: ConvertirContext) {
         data: { convertidaAFactura: true },
       });
 
+      // Deduct stock now that the factura exists
+      await deductStockForSale(
+        tx,
+        cotizacion.items.map((i) => ({ productoId: i.productoId, cantidad: i.cantidad })),
+      );
+
       const firma = createHash("sha256")
         .update(`${session!.user!.id}:CONVERTIR_COTIZACION:${id}:${factura.id}:${Date.now()}`)
         .digest("hex");
@@ -95,7 +111,14 @@ export async function POST(_request: Request, context: ConvertirContext) {
     });
 
     return Response.json({ ok: true, factura: result }, { status: 201 });
-  } catch {
+  } catch (err: unknown) {
+    if (err instanceof Error && err.message === "insufficient_stock") {
+      const shortages = (err as Error & { shortages?: unknown }).shortages ?? [];
+      return Response.json(
+        { ok: false, error: "Stock insuficiente para uno o más productos", shortages },
+        { status: 422 },
+      );
+    }
     return Response.json({ ok: false, error: "No se pudo convertir la cotizacion" }, { status: 503 });
   }
 }

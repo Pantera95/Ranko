@@ -1,6 +1,7 @@
 import { FileText } from "lucide-react";
 
 import { auth } from "@/auth";
+import { ResponderCotizacionButtons } from "@/components/public/ResponderCotizacionButtons";
 import { getClienteCotizaciones } from "@/lib/client-sections";
 import { cn } from "@/lib/utils";
 import type { EstadoCotizacion } from "@prisma/client";
@@ -36,10 +37,10 @@ export default async function ClienteCotizacionesPage() {
   return (
     <main className="p-4 sm:p-6" style={{ color: "var(--text-primary)" }}>
       <section className="mx-auto max-w-4xl">
-        <p className="text-sm font-bold uppercase tracking-[0.18em]" style={{ color: "var(--color-gold)" }}>
+        <p className="font-mono-tech text-xs" style={{ color: "var(--color-gold)" }}>
           Portal del cliente
         </p>
-        <h1 className="mt-2 text-4xl font-black uppercase">Mis cotizaciones</h1>
+        <h1 className="mt-2 font-display-kinetic--tight text-3xl uppercase leading-tight sm:text-4xl">Mis cotizaciones</h1>
         <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
           Propuestas comerciales de Ranko Parts para tus requerimientos.
         </p>
@@ -80,47 +81,52 @@ export default async function ClienteCotizacionesPage() {
         {/* Pendientes destacadas */}
         {pendientes.length > 0 ? (
           <section className="mt-8">
-            <h2 className="text-xs font-black uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+            <h2 className="font-mono-tech text-xs" style={{ color: "var(--text-muted)" }}>
               Esperando tu respuesta
             </h2>
             <div className="mt-3 grid gap-3">
               {pendientes.map((q) => (
                 <article
-                  className="flex items-center justify-between gap-4 p-5"
+                  className="p-5"
                   key={q.id}
                   style={{ border: "1px solid var(--border)", background: "var(--bg-card)" }}
                 >
-                  <div className="flex items-start gap-4">
-                    <div
-                      className="mt-0.5 rounded-full p-2"
-                      style={{ background: "var(--bg-elevated)" }}
-                    >
-                      <FileText size={18} style={{ color: "var(--text-secondary)" }} />
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-start gap-4">
+                      <div
+                        className="mt-0.5 rounded-full p-2"
+                        style={{ background: "var(--bg-elevated)" }}
+                      >
+                        <FileText size={18} style={{ color: "var(--text-secondary)" }} />
+                      </div>
+                      <div>
+                        <p className="font-mono font-black">{q.numero}</p>
+                        <p className="mt-0.5 text-xs" style={{ color: "var(--text-muted)" }}>
+                          Creada {q.createdAt} · Valida {q.validezDias} dias
+                        </p>
+                        {q.notas ? (
+                          <p className="mt-1 text-xs italic" style={{ color: "var(--text-muted)" }}>{q.notas}</p>
+                        ) : null}
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-mono font-black">{q.numero}</p>
-                      <p className="mt-0.5 text-xs" style={{ color: "var(--text-muted)" }}>
-                        Creada {q.createdAt} · Valida {q.validezDias} dias
-                      </p>
-                      {q.notas ? (
-                        <p className="mt-1 text-xs italic" style={{ color: "var(--text-muted)" }}>{q.notas}</p>
+                    <div className="text-right">
+                      <p className="font-mono text-lg font-black">{q.total}</p>
+                      {q.descuento !== "$0.00" ? (
+                        <p className="text-xs" style={{ color: "var(--text-muted)" }}>Dto {q.descuento}</p>
                       ) : null}
+                      <span
+                        className={cn(
+                          "mt-2 inline-block rounded px-2 py-1 text-[10px] font-black uppercase",
+                          ESTADO_STYLES[q.estado],
+                        )}
+                      >
+                        {ESTADO_LABELS[q.estado]}
+                      </span>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-mono text-lg font-black">{q.total}</p>
-                    {q.descuento !== "$0.00" ? (
-                      <p className="text-xs" style={{ color: "var(--text-muted)" }}>Dto {q.descuento}</p>
-                    ) : null}
-                    <span
-                      className={cn(
-                        "mt-2 inline-block rounded px-2 py-1 text-[10px] font-black uppercase",
-                        ESTADO_STYLES[q.estado],
-                      )}
-                    >
-                      {ESTADO_LABELS[q.estado]}
-                    </span>
-                  </div>
+                  {!data.isFallback && (q.estado === "ENVIADA" || q.estado === "BORRADOR") && (
+                    <ResponderCotizacionButtons cotizacionId={q.id} numero={q.numero} />
+                  )}
                 </article>
               ))}
             </div>
@@ -147,7 +153,7 @@ export default async function ClienteCotizacionesPage() {
 
         {/* Tabla completa */}
         <section className="mt-10">
-          <h2 className="text-xs font-black uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+          <h2 className="font-mono-tech text-xs" style={{ color: "var(--text-muted)" }}>
             Historial
           </h2>
           <div

@@ -45,10 +45,10 @@ export default async function AdminEcommercePage() {
         {/* ── Header ────────────────────────────────────────────────── */}
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-sm font-bold uppercase tracking-[0.18em]" style={{ color: "var(--color-gold)" }}>
+            <p className="font-mono-tech text-xs" style={{ color: "var(--color-gold)" }}>
               Canal online
             </p>
-            <h1 className="mt-2 text-4xl font-black uppercase">E-Commerce</h1>
+            <h1 className="mt-2 font-display-kinetic--tight text-3xl uppercase leading-tight sm:text-4xl">E-Commerce</h1>
             <p className="mt-2 text-sm leading-6" style={{ color: "var(--text-secondary)" }}>
               Gestiona los productos visibles en la tienda pública y los leads que llegan desde la web.
             </p>
@@ -121,7 +121,7 @@ export default async function AdminEcommercePage() {
         <section>
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="text-xs font-black uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+              <h2 className="font-mono-tech text-xs" style={{ color: "var(--text-muted)" }}>
                 Catálogo de la tienda
               </h2>
               <p className="mt-0.5 text-xs" style={{ color: "var(--text-muted)" }}>
@@ -144,7 +144,7 @@ export default async function AdminEcommercePage() {
         <section>
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="text-xs font-black uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+              <h2 className="font-mono-tech text-xs" style={{ color: "var(--text-muted)" }}>
                 Leads desde tienda web
               </h2>
               <p className="mt-0.5 text-xs" style={{ color: "var(--text-muted)" }}>
@@ -252,7 +252,7 @@ export default async function AdminEcommercePage() {
 
         {/* ── Quick links ───────────────────────────────────────────── */}
         <section>
-          <h2 className="mb-4 text-xs font-black uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+          <h2 className="font-mono-tech mb-4 text-xs" style={{ color: "var(--text-muted)" }}>
             Módulos relacionados
           </h2>
           <div className="grid gap-3 sm:grid-cols-3">

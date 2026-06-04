@@ -1,7 +1,10 @@
-import { Car, CreditCard, MapPin, Phone, User } from "lucide-react";
+import { Car, CreditCard, KeyRound, MapPin, Phone, User } from "lucide-react";
 
 import { auth } from "@/auth";
+import { CambiarPasswordForm } from "@/components/public/CambiarPasswordForm";
 import { CopyButton } from "@/components/public/CopyButton";
+import { EditarContactoForm } from "@/components/public/EditarContactoForm";
+import { MisVehiculosPanel } from "@/components/public/MisVehiculosPanel";
 import { getClientePerfil } from "@/lib/client-sections";
 import { cn } from "@/lib/utils";
 
@@ -26,10 +29,10 @@ export default async function ClientePerfilPage() {
   return (
     <main className="p-4 sm:p-6" style={{ color: "var(--text-primary)" }}>
       <section className="mx-auto max-w-4xl">
-        <p className="text-sm font-bold uppercase tracking-[0.18em]" style={{ color: "var(--color-gold)" }}>
+        <p className="font-mono-tech text-xs" style={{ color: "var(--color-gold)" }}>
           Portal del cliente
         </p>
-        <h1 className="mt-2 text-4xl font-black uppercase">Mi perfil</h1>
+        <h1 className="mt-2 font-display-kinetic--tight text-3xl uppercase leading-tight sm:text-4xl">Mi perfil</h1>
         <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
           Datos comerciales registrados en Ranko Parts.
         </p>
@@ -137,6 +140,18 @@ export default async function ClientePerfilPage() {
               <Row label="Pais" value={perfil.pais} />
               {perfil.direccion ? <Row label="Direccion" value={perfil.direccion} /> : null}
             </div>
+
+            {/* Self-service editor for contact + location fields */}
+            {!perfil.isFallback && (
+              <EditarContactoForm
+                initial={{
+                  whatsapp: perfil.whatsapp,
+                  email: perfil.email,
+                  ciudad: perfil.ciudad,
+                  direccion: perfil.direccion,
+                }}
+              />
+            )}
           </section>
 
           {/* Condiciones comerciales */}
@@ -185,31 +200,57 @@ export default async function ClientePerfilPage() {
                 Mis vehiculos ({perfil.vehiculos.length})
               </h2>
             </div>
-            {perfil.vehiculos.length ? (
-              <div>
-                {perfil.vehiculos.map((v) => (
-                  <div
-                    className="px-5 py-4"
-                    key={v.id}
-                    style={{ borderTop: "1px solid var(--border)" }}
-                  >
-                    <p className="font-black uppercase">{v.marca} {v.modelo} {v.anio}</p>
-                    <div className="mt-1 flex flex-wrap gap-3 text-xs" style={{ color: "var(--text-muted)" }}>
-                      {v.motor ? <span>Motor: {v.motor}</span> : null}
-                      {v.color ? <span>Color: {v.color}</span> : null}
-                      {v.placa ? <span className="font-mono">Placa: {v.placa}</span> : null}
+            {perfil.isFallback ? (
+              perfil.vehiculos.length ? (
+                <div>
+                  {perfil.vehiculos.map((v) => (
+                    <div
+                      className="px-5 py-4"
+                      key={v.id}
+                      style={{ borderTop: "1px solid var(--border)" }}
+                    >
+                      <p className="font-black uppercase">{v.marca} {v.modelo} {v.anio}</p>
+                      <div className="mt-1 flex flex-wrap gap-3 text-xs" style={{ color: "var(--text-muted)" }}>
+                        {v.motor ? <span>Motor: {v.motor}</span> : null}
+                        {v.color ? <span>Color: {v.color}</span> : null}
+                        {v.placa ? <span className="font-mono">Placa: {v.placa}</span> : null}
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="px-5 py-6 text-sm" style={{ color: "var(--text-muted)" }}>Sin vehiculos registrados.</p>
+              )
             ) : (
-              <p className="px-5 py-6 text-sm" style={{ color: "var(--text-muted)" }}>Sin vehiculos registrados.</p>
+              <MisVehiculosPanel
+                initial={perfil.vehiculos.map((v) => ({
+                  id: v.id,
+                  marca: v.marca,
+                  modelo: v.modelo,
+                  anio: v.anio,
+                  motor: v.motor || null,
+                  color: v.color || null,
+                  placa: v.placa || null,
+                }))}
+              />
             )}
           </section>
         </div>
 
+        {/* Cambiar contraseña */}
+        <section className="mt-6" style={{ border: "1px solid var(--border)", background: "var(--bg-card)" }}>
+          <div
+            className="flex items-center gap-3 px-5 py-4"
+            style={{ borderBottom: "1px solid var(--border)" }}
+          >
+            <KeyRound size={18} style={{ color: "var(--text-muted)" }} />
+            <h2 className="font-black uppercase">Cambiar contraseña</h2>
+          </div>
+          <CambiarPasswordForm />
+        </section>
+
         <p className="mt-8 text-xs" style={{ color: "var(--text-muted)" }}>
-          Para actualizar tus datos contacta a tu vendedor por WhatsApp.
+          Puedes actualizar tu WhatsApp, email, dirección y vehículos desde aquí. Para cambios en empresa, RIF o condiciones comerciales, contacta a tu vendedor.
         </p>
       </section>
     </main>

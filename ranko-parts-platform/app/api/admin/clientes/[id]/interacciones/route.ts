@@ -36,20 +36,15 @@ export async function POST(request: Request, context: Ctx) {
     return Response.json({ error: "La descripción es requerida" }, { status: 400 });
   }
 
-  // Resolve the Usuario record linked to the session email
-  const usuario = await prisma.usuario
-    .findFirst({ where: { email: session!.user!.email! }, select: { id: true } })
-    .catch(() => null);
-
-  if (!usuario) {
-    return Response.json({ error: "Usuario del sistema no encontrado" }, { status: 404 });
+  if (!session.user?.id) {
+    return Response.json({ error: "Sesión inválida" }, { status: 401 });
   }
 
   try {
     const interaccion = await prisma.interaccion.create({
       data: {
         clienteId,
-        usuarioId: usuario.id,
+        usuarioId: session.user.id,
         tipo: body.tipo,
         descripcion: (body.descripcion as string).trim(),
         resultado: body.resultado?.trim() || null,

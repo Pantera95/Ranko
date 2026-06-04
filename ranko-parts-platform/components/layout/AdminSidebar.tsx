@@ -6,6 +6,7 @@ import { ChevronLeft } from "lucide-react";
 
 import { LogoutButton } from "@/components/auth/LogoutButton";
 import { ADMIN_NAV_GROUPS } from "@/lib/admin-nav";
+import { badgeForNavHref, type AdminNavCounts } from "@/lib/admin-nav-counts";
 import { cn } from "@/lib/utils";
 import type { RolUsuarioApp } from "@/lib/roles";
 
@@ -14,9 +15,10 @@ type AdminSidebarProps = {
   role?: RolUsuarioApp;
   name?: string | null;
   email?: string | null;
+  counts?: AdminNavCounts;
 };
 
-export function AdminSidebar({ role, name, email }: AdminSidebarProps) {
+export function AdminSidebar({ role, name, email, counts }: AdminSidebarProps) {
   const pathname = usePathname();
 
   return (
@@ -30,8 +32,15 @@ export function AdminSidebar({ role, name, email }: AdminSidebarProps) {
     >
       {/* Logo */}
       <div className="px-5 py-5" style={{ borderBottom: "1px solid var(--border)" }}>
-        <Link href="/admin" className="font-mono text-xl font-black uppercase" style={{ color: "var(--text-primary)" }}>
-          Ranko <span style={{ color: "var(--color-gold)" }}>Parts</span>
+        <Link href="/admin" className="group flex items-center gap-2 text-xl font-black uppercase tracking-tight" style={{ color: "var(--text-primary)" }}>
+          <span
+            aria-hidden="true"
+            className="block h-6 w-1 transition-all group-hover:h-7"
+            style={{ background: "var(--color-gold)" }}
+          />
+          <span className="font-mono">
+            Ranko <span style={{ color: "var(--color-gold)" }}>Parts</span>
+          </span>
         </Link>
         <p className="mt-1 text-xs uppercase tracking-[0.16em]" style={{ color: "var(--text-muted)" }}>
           Enterprise SaaS
@@ -94,7 +103,26 @@ export function AdminSidebar({ role, name, email }: AdminSidebarProps) {
                         size={17}
                         style={{ color: isActive ? "var(--color-gold)" : "inherit" }}
                       />
-                      {item.label}
+                      <span className="flex-1">{item.label}</span>
+                      {(() => {
+                        const badge = badgeForNavHref(item.href, counts);
+                        if (!badge) return null;
+                        return (
+                          <span
+                            className="grid min-w-[20px] h-5 place-items-center rounded-full px-1.5 font-mono text-[10px] font-black text-white"
+                            style={{
+                              background:
+                                badge.tone === "danger"
+                                  ? "var(--color-danger)"
+                                  : "var(--color-gold)",
+                              color: badge.tone === "danger" ? "#fff" : "#000",
+                            }}
+                            aria-label={`${badge.count} pendientes`}
+                          >
+                            {badge.count > 99 ? "99+" : badge.count}
+                          </span>
+                        );
+                      })()}
                     </Link>
                   );
                 })}

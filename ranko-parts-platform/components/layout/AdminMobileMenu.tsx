@@ -7,15 +7,17 @@ import { useEffect, useState } from "react";
 
 import { LogoutButton } from "@/components/auth/LogoutButton";
 import { ADMIN_NAV_GROUPS } from "@/lib/admin-nav";
+import { badgeForNavHref, type AdminNavCounts } from "@/lib/admin-nav-counts";
 import type { RolUsuarioApp } from "@/lib/roles";
 
 type Props = {
   role?: RolUsuarioApp;
   name?: string | null;
   email?: string | null;
+  counts?: AdminNavCounts;
 };
 
-export function AdminMobileMenu({ role, name, email }: Props) {
+export function AdminMobileMenu({ role, name, email, counts }: Props) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -32,10 +34,12 @@ export function AdminMobileMenu({ role, name, email }: Props) {
 
   return (
     <>
-      {/* Hamburger button — visible on mobile only */}
+      {/* Hamburger button — visible on mobile only. Surfaces a dot indicator
+          when ANY nav badge has a non-zero count, so admins know to open the
+          drawer even before they see the per-item numbers. */}
       <button
         aria-label={open ? "Cerrar menú" : "Abrir menú"}
-        className="grid size-10 shrink-0 place-items-center border transition lg:hidden"
+        className="relative grid size-10 shrink-0 place-items-center border transition lg:hidden"
         style={{
           background: "var(--bg-input)",
           borderColor: "var(--border)",
@@ -45,6 +49,13 @@ export function AdminMobileMenu({ role, name, email }: Props) {
         type="button"
       >
         {open ? <X size={18} /> : <Menu size={18} />}
+        {!open && counts && (counts.pagosPorVerificar + counts.facturasVencidas + counts.alertasCriticas) > 0 && (
+          <span
+            className="absolute -right-0.5 -top-0.5 block size-2.5 rounded-full"
+            style={{ background: "var(--color-danger)" }}
+            aria-hidden="true"
+          />
+        )}
       </button>
 
       {/* Overlay */}
@@ -71,11 +82,18 @@ export function AdminMobileMenu({ role, name, email }: Props) {
           <div>
             <Link
               href="/admin"
-              className="font-mono text-xl font-black uppercase"
+              className="group flex items-center gap-2 text-xl font-black uppercase tracking-tight"
               style={{ color: "var(--text-primary)" }}
               onClick={() => setOpen(false)}
             >
-              Ranko <span style={{ color: "var(--color-gold)" }}>Parts</span>
+              <span
+                aria-hidden="true"
+                className="block h-6 w-1"
+                style={{ background: "var(--color-gold)" }}
+              />
+              <span className="font-mono">
+                Ranko <span style={{ color: "var(--color-gold)" }}>Parts</span>
+              </span>
             </Link>
             <p className="mt-0.5 text-xs uppercase tracking-[0.16em]" style={{ color: "var(--text-muted)" }}>
               Enterprise SaaS
@@ -108,6 +126,7 @@ export function AdminMobileMenu({ role, name, email }: Props) {
                   .map((item) => {
                     const Icon = item.icon;
                     const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+                    const badge = badgeForNavHref(item.href, counts);
                     return (
                       <Link
                         key={item.href}
@@ -124,7 +143,20 @@ export function AdminMobileMenu({ role, name, email }: Props) {
                           size={17}
                           style={{ color: isActive ? "var(--color-gold)" : "inherit" }}
                         />
-                        {item.label}
+                        <span className="flex-1">{item.label}</span>
+                        {badge && (
+                          <span
+                            className="grid min-w-[20px] h-5 place-items-center rounded-full px-1.5 font-mono text-[10px] font-black"
+                            style={{
+                              background:
+                                badge.tone === "danger" ? "var(--color-danger)" : "var(--color-gold)",
+                              color: badge.tone === "danger" ? "#fff" : "#000",
+                            }}
+                            aria-label={`${badge.count} pendientes`}
+                          >
+                            {badge.count > 99 ? "99+" : badge.count}
+                          </span>
+                        )}
                       </Link>
                     );
                   })}

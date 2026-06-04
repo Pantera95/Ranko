@@ -1,7 +1,34 @@
 import { Activity, Clock, Shield, User } from "lucide-react";
+import Link from "next/link";
 
 import { getLogsData, ACCION_LABELS, ACCION_STYLES } from "@/lib/logs-admin";
 import { cn } from "@/lib/utils";
+
+/**
+ * Resolves the admin page that shows the full record referenced by a log row.
+ * Returns null for entity types that don't have a 1:1 detail page (Pago → use
+ * the queue at /admin/pagos instead) or when the id looks like a placeholder
+ * (fallback data uses fake numeric codes that won't match real cuid routes).
+ */
+function entidadHref(tipo: string, id: string): string | null {
+  if (!id || /^[A-Z]+-\d+$/i.test(id)) return null; // placeholder ids like FAC-0001
+  switch (tipo.toLowerCase()) {
+    case "factura":
+      return `/admin/facturacion/${id}`;
+    case "cotizacion":
+    case "cotización":
+      return `/admin/cotizaciones/${id}`;
+    case "cliente":
+      return `/admin/clientes/${id}`;
+    case "producto":
+      return `/admin/catalogo/${id}`;
+    case "pago":
+      // Pagos don't have a dedicated detail page; the queue is the closest match.
+      return "/admin/pagos";
+    default:
+      return null;
+  }
+}
 
 function formatTimestamp(iso: string) {
   const d = new Date(iso);
@@ -25,10 +52,10 @@ export default async function AdminLogsPage() {
         {/* Header */}
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-sm font-bold uppercase tracking-[0.18em]" style={{ color: "var(--color-gold)" }}>
+            <p className="font-mono-tech text-xs" style={{ color: "var(--color-gold)" }}>
               Sistema
             </p>
-            <h1 className="mt-2 text-4xl font-black uppercase">Logs de auditoría</h1>
+            <h1 className="mt-2 font-display-kinetic--tight text-3xl uppercase leading-tight sm:text-4xl">Logs de auditoría</h1>
             <p className="mt-2 text-sm leading-6" style={{ color: "var(--text-secondary)" }}>
               Registro inmutable de todas las acciones críticas realizadas en la plataforma.
             </p>
@@ -92,7 +119,7 @@ export default async function AdminLogsPage() {
 
         {/* Log list */}
         <section className="mt-6">
-          <p className="text-xs font-black uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+          <p className="font-mono-tech text-xs" style={{ color: "var(--text-muted)" }}>
             Eventos ({logs.length})
           </p>
 
@@ -131,12 +158,20 @@ export default async function AdminLogsPage() {
                       <p className="text-sm font-black" style={{ color: "var(--text-primary)" }}>
                         {log.entidadTipo}
                       </p>
-                      <code
-                        className="rounded px-1.5 py-0.5 font-mono text-xs font-bold"
-                        style={{ background: "var(--bg-elevated)", color: "var(--color-gold)" }}
-                      >
-                        {log.entidadId}
-                      </code>
+                      {(() => {
+                        const href = entidadHref(log.entidadTipo, log.entidadId);
+                        const codeProps = {
+                          className: "rounded px-1.5 py-0.5 font-mono text-xs font-bold transition hover:opacity-80",
+                          style: { background: "var(--bg-elevated)", color: "var(--color-gold)" },
+                        };
+                        return href ? (
+                          <Link href={href} {...codeProps} title={`Abrir ${log.entidadTipo}`}>
+                            {log.entidadId}
+                          </Link>
+                        ) : (
+                          <code {...codeProps}>{log.entidadId}</code>
+                        );
+                      })()}
                     </div>
                     <div className="mt-1 flex flex-wrap items-center gap-3">
                       <span

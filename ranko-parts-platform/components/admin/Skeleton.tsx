@@ -2,10 +2,16 @@ import { cn } from "@/lib/utils";
 
 // ─── Base pulse block ─────────────────────────────────────────────────────────
 
+/**
+ * Base skeleton block. Uses the gold-shimmer animation defined in globals.css
+ * (`.animate-shimmer`) so loading states feel branded instead of generic.
+ * Falls back gracefully if reduced-motion is requested (the animation just
+ * stops; the gradient remains).
+ */
 export function Skeleton({ className }: { className?: string }) {
   return (
     <div
-      className={cn("animate-pulse rounded", className)}
+      className={cn("animate-shimmer rounded", className)}
       style={{ background: "var(--bg-elevated)" }}
     />
   );

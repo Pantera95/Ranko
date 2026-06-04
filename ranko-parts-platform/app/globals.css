@@ -3,6 +3,12 @@
 /* ── Tailwind v4: dark mode via .dark class ─────────────────────────────── */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Note: brand fonts (Syncopate / Space Mono / Inter — "Kinetic Motion"
+   pairing recommended by ui-ux-pro-max for automotive brands) are loaded
+   via <link rel="preconnect"> + <link rel="stylesheet"> in app/layout.tsx,
+   NOT via @import here. Tailwind v4 + Turbopack reorders this file's rules
+   and would push the @import below other rules, breaking the cascade. */
+
 /* ── Light theme (default) ──────────────────────────────────────────────── */
 :root {
   /* Structural backgrounds */
@@ -41,10 +47,14 @@
   --background:      var(--bg-base);
   --foreground:      var(--text-primary);
 
-  /* Fonts */
-  --font-display: "Arial Narrow", "Impact", sans-serif;
-  --font-body:    "DM Sans", "Inter", system-ui, sans-serif;
-  --font-mono:    "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  /* Fonts — "Kinetic Motion" tri-stack from ui-ux-pro-max.
+     Loaded via next/font (see app/layout.tsx) which exposes them as
+     `--font-syncopate / --font-inter / --font-space-mono`. We re-export them
+     under the semantic aliases below so all components keep using
+     `var(--font-display) / var(--font-body) / var(--font-mono)`. */
+  --font-display: var(--font-syncopate), "Arial Narrow", "Impact", sans-serif;
+  --font-body:    var(--font-inter), "DM Sans", system-ui, sans-serif;
+  --font-mono:    var(--font-space-mono), "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
 }
 
 /* ── Dark theme ─────────────────────────────────────────────────────────── */
@@ -117,6 +127,76 @@ a {
 ::selection {
   background: var(--color-gold);
   color: #000000;
+}
+
+/* ── Kinetic Motion display helpers ──────────────────────────────────────
+   Per ui-ux-pro-max Kinetic Motion guidance: Syncopate at wide tracking is
+   the brand voice for hero / section headings. Use sparingly — only on
+   moments that should feel like "movement / machinery / speed". Letterspacing
+   is critical because Syncopate's wide-stance characters need air to breathe. */
+.font-display-kinetic {
+  font-family: var(--font-display);
+  letter-spacing: 0.04em;
+  font-weight: 700;
+}
+.font-display-kinetic--tight {
+  font-family: var(--font-display);
+  letter-spacing: 0.02em;
+  font-weight: 700;
+}
+.font-mono-tech {
+  font-family: var(--font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ── Focus rings — premium gold accent on interactive elements.
+   For inputs/selects/textareas we use :focus (fires on both click and Tab)
+   because forms-heavy admin work benefits from "I clicked the right field"
+   feedback. For buttons/links we use :focus-visible (Tab only) to avoid
+   noise on every click. Critical for accessibility (WCAG 2.4.7). */
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--color-gold) !important;
+  box-shadow:
+    0 0 0 1px var(--color-gold),
+    0 0 0 4px color-mix(in srgb, var(--color-gold) 25%, transparent) !important;
+  transition: box-shadow 120ms ease, border-color 120ms ease;
+}
+button:focus-visible,
+a:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--bg-base),
+    0 0 0 4px var(--color-gold) !important;
+  border-radius: 2px;
+  transition: box-shadow 120ms ease;
+}
+
+/* ── Shimmer animation for skeletons. Used by .animate-pulse alternatives
+   that need a more polished "data loading" feel matching the brand. */
+@keyframes ranko-shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+.animate-shimmer {
+  background-image: linear-gradient(
+    90deg,
+    var(--bg-elevated) 0%,
+    color-mix(in srgb, var(--color-gold) 12%, var(--bg-elevated)) 50%,
+    var(--bg-elevated) 100%
+  );
+  background-size: 200% 100%;
+  animation: ranko-shimmer 1.6s ease-in-out infinite;
+}
+/* Respect users who request reduced motion — keep the gradient but freeze it. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-shimmer {
+    animation: none;
+    background-position: 50% 0;
+  }
 }
 
 /* ── Scrollbar (dark/light) ─────────────────────────────────────────────── */

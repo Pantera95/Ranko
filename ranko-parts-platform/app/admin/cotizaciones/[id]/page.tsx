@@ -12,7 +12,7 @@ import {
   User,
 } from "lucide-react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { cn } from "@/lib/utils";
@@ -69,14 +69,17 @@ const ESTADO_STYLES: Record<string, string> = {
 };
 
 const NEXT_ESTADO: Record<string, { label: string; value: string }[]> = {
-  BORRADOR: [{ label: "Marcar enviada", value: "ENVIADA" }],
+  BORRADOR: [
+    { label: "Marcar enviada", value: "ENVIADA" },
+    { label: "Aceptada (venta directa)", value: "ACEPTADA" },
+  ],
   ENVIADA: [
     { label: "Aceptada", value: "ACEPTADA" },
     { label: "Rechazada", value: "RECHAZADA" },
   ],
-  ACEPTADA: [],
-  RECHAZADA: [],
-  VENCIDA: [],
+  ACEPTADA: [{ label: "Reabrir (volver a enviada)", value: "ENVIADA" }],
+  RECHAZADA: [{ label: "Reabrir (volver a enviada)", value: "ENVIADA" }],
+  VENCIDA: [{ label: "Reabrir (volver a enviada)", value: "ENVIADA" }],
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -101,7 +104,6 @@ function expiryDate(createdAt: string, validezDias: number) {
 
 export default function CotizacionDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const router = useRouter();
   const [cot, setCot] = useState<Cotizacion | null>(null);
   const [loading, setLoading] = useState(true);
   const [converting, setConverting] = useState(false);
@@ -124,6 +126,14 @@ export default function CotizacionDetailPage() {
 
   async function handleEstado(estado: string) {
     if (!cot) return;
+
+    // Reverting from a terminal state? confirm first.
+    const reverting = (cot.estado === "ACEPTADA" || cot.estado === "RECHAZADA" || cot.estado === "VENCIDA")
+      && estado === "ENVIADA";
+    if (reverting && !confirm("¿Reabrir esta cotización? El historial queda registrado en el log.")) {
+      return;
+    }
+
     setUpdatingEstado(true);
     const res = await fetch(`/api/admin/cotizaciones/${id}`, {
       method: "PATCH",
@@ -134,7 +144,41 @@ export default function CotizacionDetailPage() {
     if (res.ok) {
       setCot((prev) => prev ? { ...prev, estado } : prev);
     } else {
-      setMessage("No se pudo actualizar el estado.");
+      const j = await res.json().catch(() => null);
+      setMessage(j?.error ?? "No se pudo actualizar el estado.");
+    }
+  }
+
+  async function handleWhatsAppClick(href: string) {
+    // Open WhatsApp immediately (in the user's click handler — popup-blocker safe)
+    window.open(href, "_blank", "noopener,noreferrer");
+
+    if (!cot) return;
+
+    // If the quote wasn't already marked as sent or was still in BORRADOR, update it
+    const shouldMarkSent = !cot.enviadaPorWhatsApp;
+    const shouldAdvanceEstado = cot.estado === "BORRADOR";
+    if (!shouldMarkSent && !shouldAdvanceEstado) return;
+
+    const payload: Record<string, unknown> = {};
+    if (shouldMarkSent) payload.enviadaPorWhatsApp = true;
+    if (shouldAdvanceEstado) payload.estado = "ENVIADA";
+
+    try {
+      const res = await fetch(`/api/admin/cotizaciones/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) {
+        setCot((prev) => prev ? {
+          ...prev,
+          enviadaPorWhatsApp: shouldMarkSent ? true : prev.enviadaPorWhatsApp,
+          estado: shouldAdvanceEstado ? "ENVIADA" : prev.estado,
+        } : prev);
+      }
+    } catch {
+      // Non-blocking — WhatsApp already opened
     }
   }
 
@@ -148,7 +192,18 @@ export default function CotizacionDetailPage() {
       setCot((prev) => prev ? { ...prev, convertidaAFactura: true, factura: data.factura } : prev);
       setMessage(`✓ Factura ${data.factura.numero} creada correctamente.`);
     } else {
-      setMessage("No se pudo convertir la cotización.");
+      const j = await res.json().catch(() => null) as
+        | { error?: string; shortages?: Array<{ sku: string; nombre: string; pedido: number; disponible: number }> }
+        | null;
+
+      if (j?.shortages && j.shortages.length > 0) {
+        const detail = j.shortages
+          .map((s) => `• ${s.sku} ${s.nombre} — pedido ${s.pedido}, disponible ${s.disponible}`)
+          .join("\n");
+        setMessage(`Stock insuficiente:\n${detail}`);
+      } else {
+        setMessage(j?.error ?? "No se pudo convertir la cotización.");
+      }
     }
   }
 
@@ -176,7 +231,8 @@ export default function CotizacionDetailPage() {
   const subtotal = cot.subtotal;
   const descuento = cot.descuento;
   const total = cot.total;
-  const nextStates = NEXT_ESTADO[cot.estado] ?? [];
+  // Once invoiced, estado is frozen — clear the next-state list entirely.
+  const nextStates = cot.convertidaAFactura ? [] : NEXT_ESTADO[cot.estado] ?? [];
 
   const waMsg = encodeURIComponent(
     `Hola ${cot.cliente.nombre}, te enviamos la cotización ${cot.numero} por un total de ${money(total)}. Por favor confirma si deseas proceder.`,
@@ -213,15 +269,15 @@ export default function CotizacionDetailPage() {
         {/* Flash message */}
         {message && (
           <div
-            className="mt-4 flex items-center gap-3 p-4 text-sm"
+            className="mt-4 flex items-start gap-3 p-4 text-sm"
             style={{
               border: `1px solid ${message.startsWith("✓") ? "var(--color-success)" : "var(--color-danger)"}`,
               background: "var(--bg-card)",
               color: "var(--text-primary)",
             }}
           >
-            {message.startsWith("✓") ? <CheckCircle2 size={16} style={{ color: "var(--color-success)" }} /> : null}
-            {message}
+            {message.startsWith("✓") ? <CheckCircle2 size={16} className="mt-0.5 shrink-0" style={{ color: "var(--color-success)" }} /> : null}
+            <pre className="flex-1 whitespace-pre-wrap font-sans text-sm leading-6">{message}</pre>
             {cot.factura && (
               <Link
                 href={`/admin/facturacion/${cot.factura.id}`}
@@ -433,21 +489,21 @@ export default function CotizacionDetailPage() {
           className="mt-4 p-5"
           style={{ border: "1px solid var(--border)", background: "var(--bg-card)" }}
         >
-          <p className="text-xs font-black uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+          <p className="font-mono-tech text-xs" style={{ color: "var(--text-muted)" }}>
             Acciones
           </p>
           <div className="mt-4 flex flex-wrap gap-3">
-            {/* WhatsApp send */}
-            {waHref && cot.estado !== "RECHAZADA" && cot.estado !== "ACEPTADA" && (
-              <a
-                href={waHref}
-                target="_blank"
-                rel="noopener noreferrer"
+            {/* WhatsApp send — also marks enviadaPorWhatsApp + advances BORRADOR → ENVIADA */}
+            {waHref && cot.estado !== "RECHAZADA" && (
+              <button
+                type="button"
+                onClick={() => handleWhatsAppClick(waHref)}
                 className="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-black uppercase text-white transition hover:opacity-90"
                 style={{ background: "#25D366" }}
               >
-                <MessageSquare size={13} /> Enviar por WhatsApp
-              </a>
+                <MessageSquare size={13} />
+                {cot.enviadaPorWhatsApp ? "Reenviar por WhatsApp" : "Enviar por WhatsApp"}
+              </button>
             )}
 
             {/* Estado transitions */}

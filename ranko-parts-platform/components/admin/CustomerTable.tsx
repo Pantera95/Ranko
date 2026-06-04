@@ -1,6 +1,6 @@
 "use client";
 
-import { Ban, Car, CheckCircle, ExternalLink, Search, ThermometerSun } from "lucide-react";
+import { Ban, Car, CheckCircle, ExternalLink, Globe, Search, ThermometerSun } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
@@ -95,7 +95,7 @@ export function CustomerTable({ initialClientes, isFallback }: CustomerTableProp
 
       <div className="mt-4 overflow-x-auto" style={{ border: "1px solid var(--border)" }}>
         <table className="min-w-[1100px] w-full border-collapse text-left text-sm" style={{ background: "var(--bg-card)" }}>
-          <thead className="text-xs uppercase" style={{ background: "var(--bg-base)", color: "var(--text-muted)" }}>
+          <thead className="font-mono-tech text-xs" style={{ background: "var(--bg-base)", color: "var(--text-muted)" }}>
             <tr>
               <th className="px-4 py-3">Cliente</th>
               <th className="px-4 py-3">Tipo</th>
@@ -145,6 +145,14 @@ export function CustomerTable({ initialClientes, isFallback }: CustomerTableProp
                   <p className="mt-1 text-xs" style={{ color: "var(--text-muted)" }}>
                     {c.fuente.charAt(0) + c.fuente.slice(1).toLowerCase()}
                   </p>
+                  {c.portalActivo ? (
+                    <div className="mt-2 flex items-center gap-1">
+                      <Globe size={10} style={{ color: "var(--color-success)" }} />
+                      <span className="text-[10px] font-bold uppercase" style={{ color: "var(--color-success)" }}>
+                        Portal
+                      </span>
+                    </div>
+                  ) : null}
                 </td>
 
                 <td className="px-4 py-4">

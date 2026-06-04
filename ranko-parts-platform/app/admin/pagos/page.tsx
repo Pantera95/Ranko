@@ -8,10 +8,10 @@ export default async function AdminPagosPage() {
     <main className="p-4 sm:p-6" style={{ color: "var(--text-primary)" }}>
       <section className="mx-auto max-w-7xl">
         <div>
-          <p className="text-sm font-bold uppercase tracking-[0.18em]" style={{ color: "var(--color-gold)" }}>
+          <p className="font-mono-tech text-xs" style={{ color: "var(--color-gold)" }}>
             Finanzas
           </p>
-          <h1 className="mt-3 text-4xl font-black uppercase">Pagos</h1>
+          <h1 className="mt-3 font-display-kinetic--tight text-3xl uppercase leading-tight sm:text-4xl">Pagos</h1>
           <p className="mt-3 max-w-3xl leading-7" style={{ color: "var(--text-secondary)" }}>
             Registro y verificacion de pagos Zelle, transferencia y efectivo. El sistema
             detecta automaticamente referencias duplicadas, montos anomalos y facturas vencidas.

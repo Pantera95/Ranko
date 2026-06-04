@@ -106,20 +106,30 @@ async function createPublicLead(data: {
     .filter(Boolean)
     .join("\n");
 
+  // Existing cliente: the DB record is authoritative — never let an anonymous
+  // public form rewrite the customer's identity (nombre, tipo) or wipe the
+  // notes log. We only fill in blank fields and APPEND the new submission to
+  // the existing notes so the vendor sees both contexts.
   const cliente = existing
     ? await prisma.cliente.update({
         where: { id: existing.id },
         data: {
-          nombre: data.nombre,
-          empresa: data.empresa || existing.empresa,
-          tipo,
-          telefono: data.telefono,
-          whatsapp: data.whatsapp || data.telefono,
-          email: data.email || existing.email,
-          ciudad: data.ciudad || existing.ciudad,
-          fuente,
-          notas,
-          usuarioId: existing.usuarioId ?? vendedor?.id,
+          // Identity fields — preserve unless the existing value is blank
+          ...(existing.nombre ? {} : { nombre: data.nombre }),
+          ...(existing.empresa ? {} : data.empresa ? { empresa: data.empresa } : {}),
+          ...(existing.ciudad ? {} : data.ciudad ? { ciudad: data.ciudad } : {}),
+          // tipo stays as-is — admins curate this; a public form must not
+          // demote a TALLER to MINORISTA by accident.
+
+          // Fill-the-gaps for secondary contact channels
+          ...(existing.whatsapp ? {} : { whatsapp: data.whatsapp || data.telefono }),
+          ...(existing.email ? {} : data.email ? { email: data.email } : {}),
+
+          // Append (not replace) the public-form note so prior context is kept
+          notas: existing.notas ? `${existing.notas}\n\n---\n${notas}` : notas,
+
+          // Assign a vendor only if none was set
+          ...(existing.usuarioId ? {} : vendedor?.id ? { usuarioId: vendedor.id } : {}),
         },
       })
     : await prisma.cliente.create({

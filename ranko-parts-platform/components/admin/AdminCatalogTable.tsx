@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import type { AdminCatalogProduct } from "@/lib/admin-catalog";
-import { cn } from "@/lib/utils";
 
 type AdminCatalogTableProps = {
   initialProducts: AdminCatalogProduct[];
@@ -116,7 +115,7 @@ export function AdminCatalogTable({ initialProducts, isFallback }: AdminCatalogT
           className="min-w-[1040px] w-full border-collapse text-left text-sm"
           style={{ background: "var(--bg-card)" }}
         >
-          <thead className="text-xs uppercase" style={{ background: "var(--bg-elevated)", color: "var(--text-muted)" }}>
+          <thead className="font-mono-tech text-xs" style={{ background: "var(--bg-elevated)", color: "var(--text-muted)" }}>
             <tr>
               <th className="px-4 py-3">Producto</th>
               <th className="px-4 py-3">Categoria</th>

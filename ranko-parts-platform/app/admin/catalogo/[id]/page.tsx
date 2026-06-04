@@ -4,13 +4,14 @@ import {
   ChevronLeft,
   Settings,
   Star,
-  Tag,
   Warehouse,
 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import CompatibilidadesPanel from "@/components/admin/CompatibilidadesPanel";
 import { ProductEditPanel } from "@/components/admin/ProductEditPanel";
+import ProductImagesPanel from "@/components/admin/ProductImagesPanel";
 import { prisma } from "@/lib/db";
 import { cn } from "@/lib/utils";
 
@@ -71,7 +72,7 @@ export default async function ProductoDetailPage({ params }: Props) {
         <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <p className="font-mono text-xs font-black uppercase tracking-widest" style={{ color: "var(--color-gold)" }}>
+              <p className="font-mono-tech text-xs" style={{ color: "var(--color-gold)" }}>
                 {p.sku}
               </p>
               {p.destacado && (
@@ -85,7 +86,7 @@ export default async function ProductoDetailPage({ params }: Props) {
                 </span>
               )}
             </div>
-            <h1 className="mt-2 text-3xl font-black uppercase leading-tight">{p.nombre}</h1>
+            <h1 className="font-display-kinetic--tight mt-3 text-2xl uppercase leading-tight sm:text-3xl">{p.nombre}</h1>
             <p className="mt-1 text-sm" style={{ color: "var(--text-secondary)" }}>
               {p.marca} · {p.categoria}
               {p.subcategoria ? ` / ${p.subcategoria}` : ""}
@@ -166,7 +167,7 @@ export default async function ProductoDetailPage({ params }: Props) {
                 style={{ borderBottom: "1px solid var(--border)", background: "var(--bg-elevated)" }}
               >
                 <Settings size={13} style={{ color: "var(--color-gold)" }} />
-                <p className="text-xs font-black uppercase tracking-widest" style={{ color: "var(--text-primary)" }}>
+                <p className="font-mono-tech text-xs" style={{ color: "var(--text-primary)" }}>
                   Datos del producto
                 </p>
               </div>
@@ -188,60 +189,22 @@ export default async function ProductoDetailPage({ params }: Props) {
               />
             </section>
 
+            {/* Images */}
+            <ProductImagesPanel productoId={p.id} initial={p.imagenes ?? []} />
+
             {/* Compatibilities */}
-            <section style={{ border: "1px solid var(--border)", background: "var(--bg-card)" }}>
-              <div
-                className="flex items-center gap-2 px-5 py-3"
-                style={{ borderBottom: "1px solid var(--border)", background: "var(--bg-elevated)" }}
-              >
-                <Tag size={13} style={{ color: "var(--color-gold)" }} />
-                <p className="text-xs font-black uppercase tracking-widest" style={{ color: "var(--text-primary)" }}>
-                  Compatibilidades ({p.compatibilidades.length})
-                </p>
-              </div>
-              {p.compatibilidades.length === 0 ? (
-                <p className="p-5 text-sm" style={{ color: "var(--text-muted)" }}>
-                  Sin compatibilidades registradas.
-                </p>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="min-w-[500px] w-full border-collapse text-sm">
-                    <thead style={{ background: "var(--bg-base)" }}>
-                      <tr>
-                        {["Marca", "Modelo", "Años", "Motor", "Sistema"].map((h) => (
-                          <th
-                            key={h}
-                            className="px-4 py-2.5 text-left text-xs font-black uppercase"
-                            style={{ color: "var(--text-muted)" }}
-                          >
-                            {h}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {p.compatibilidades.map((c) => (
-                        <tr key={c.id} style={{ borderTop: "1px solid var(--border-subtle)" }}>
-                          <td className="px-4 py-3 font-bold uppercase">{c.marca}</td>
-                          <td className="px-4 py-3">{c.modelo}</td>
-                          <td className="px-4 py-3 font-mono text-xs">
-                            {c.anioDesde === c.anioHasta
-                              ? c.anioDesde
-                              : `${c.anioDesde}–${c.anioHasta}`}
-                          </td>
-                          <td className="px-4 py-3 text-xs" style={{ color: "var(--text-muted)" }}>
-                            {c.motor ?? "—"}
-                          </td>
-                          <td className="px-4 py-3 text-xs" style={{ color: "var(--text-muted)" }}>
-                            {c.sistema ?? "—"}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </section>
+            <CompatibilidadesPanel
+              productoId={p.id}
+              initial={p.compatibilidades.map((c) => ({
+                id: c.id,
+                marca: c.marca,
+                modelo: c.modelo,
+                anioDesde: c.anioDesde,
+                anioHasta: c.anioHasta,
+                motor: c.motor ?? null,
+                sistema: c.sistema ?? null,
+              }))}
+            />
           </div>
 
           {/* RIGHT — Inventory per warehouse */}
@@ -252,7 +215,7 @@ export default async function ProductoDetailPage({ params }: Props) {
                 style={{ borderBottom: "1px solid var(--border)", background: "var(--bg-elevated)" }}
               >
                 <Warehouse size={13} style={{ color: "var(--color-gold)" }} />
-                <p className="text-xs font-black uppercase tracking-widest" style={{ color: "var(--text-primary)" }}>
+                <p className="font-mono-tech text-xs" style={{ color: "var(--text-primary)" }}>
                   Inventario por almacén
                 </p>
               </div>
@@ -321,7 +284,7 @@ export default async function ProductoDetailPage({ params }: Props) {
               <section className="p-5" style={{ border: "1px solid var(--border)", background: "var(--bg-card)" }}>
                 <div className="flex items-center gap-2">
                   <Box size={13} style={{ color: "var(--color-gold)" }} />
-                  <p className="text-xs font-black uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+                  <p className="font-mono-tech text-xs" style={{ color: "var(--text-muted)" }}>
                     Referencias
                   </p>
                 </div>

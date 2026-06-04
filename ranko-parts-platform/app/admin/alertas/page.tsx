@@ -1,8 +1,37 @@
-import { AlertTriangle, CheckCircle, CreditCard, Package, Receipt, ShieldAlert } from "lucide-react";
+import { AlertTriangle, ArrowRight, CheckCircle, CreditCard, Package, Receipt, ShieldAlert } from "lucide-react";
+import Link from "next/link";
 
 import { getAlertasData } from "@/lib/alertas";
 import { cn } from "@/lib/utils";
 import type { AlertaItem, AlertaSeveridad } from "@/lib/alertas";
+
+/**
+ * Maps each alert type to the admin page that can resolve it. Falls back to
+ * null when the alert is informational (no actionable single destination).
+ */
+function alertaHref(a: AlertaItem): { href: string; label: string } | null {
+  switch (a.tipo) {
+    case "PAGO_ANOMALO":
+      // entidadId is the factura.id — open the factura where the pago lives
+      return a.entidadId ? { href: `/admin/facturacion/${a.entidadId}`, label: "Verificar pago" } : null;
+    case "FACTURA_VENCIDA":
+      // entidadId is the cliente.id — show their outstanding invoices
+      return a.entidadId
+        ? { href: `/admin/facturacion?clienteId=${a.entidadId}`, label: "Ver facturas del cliente" }
+        : { href: "/admin/deudas", label: "Ir a deudas" };
+    case "DEUDA_CRITICA":
+      return a.entidadId
+        ? { href: `/admin/clientes/${a.entidadId}`, label: "Abrir cliente" }
+        : { href: "/admin/deudas", label: "Ir a deudas" };
+    case "CLIENTE_INACTIVO":
+      return a.entidadId ? { href: `/admin/clientes/${a.entidadId}`, label: "Abrir cliente" } : null;
+    case "STOCK_BAJO":
+      // Grouped alert (no specific entity) — go to inventory
+      return { href: "/admin/inventario", label: "Ir a inventario" };
+    default:
+      return null;
+  }
+}
 
 const SEV_STYLES: Record<AlertaSeveridad, { badge: string; border: string; icon: string }> = {
   CRITICA: {
@@ -58,10 +87,10 @@ export default async function AdminAlertasPage() {
         {/* Header */}
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-sm font-bold uppercase tracking-[0.18em]" style={{ color: "var(--color-gold)" }}>
+            <p className="font-mono-tech text-xs" style={{ color: "var(--color-gold)" }}>
               Finanzas
             </p>
-            <h1 className="mt-2 text-4xl font-black uppercase">Alertas anómalas</h1>
+            <h1 className="mt-2 font-display-kinetic--tight text-3xl uppercase leading-tight sm:text-4xl">Alertas anómalas</h1>
             <p className="mt-2 text-sm leading-6" style={{ color: "var(--text-secondary)" }}>
               Pagos sospechosos, facturas vencidas críticas y riesgos operativos en tiempo real.
             </p>
@@ -130,7 +159,7 @@ export default async function AdminAlertasPage() {
             {/* Críticas */}
             {criticas.length > 0 && (
               <section className="mt-8">
-                <h2 className="flex items-center gap-2 text-xs font-black uppercase tracking-widest" style={{ color: "var(--color-danger)" }}>
+                <h2 className="flex items-center gap-2 font-mono-tech text-xs" style={{ color: "var(--color-danger)" }}>
                   <AlertTriangle size={13} /> Críticas — Acción inmediata ({criticas.length})
                 </h2>
                 <div className="mt-3 grid gap-3">
@@ -142,7 +171,7 @@ export default async function AdminAlertasPage() {
             {/* Altas */}
             {altas.length > 0 && (
               <section className="mt-8">
-                <h2 className="text-xs font-black uppercase tracking-widest" style={{ color: "#ea580c" }}>
+                <h2 className="font-mono-tech text-xs" style={{ color: "#ea580c" }}>
                   Alta prioridad ({altas.length})
                 </h2>
                 <div className="mt-3 grid gap-3">
@@ -154,7 +183,7 @@ export default async function AdminAlertasPage() {
             {/* Medias / Bajas */}
             {medias.length > 0 && (
               <section className="mt-8">
-                <h2 className="text-xs font-black uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+                <h2 className="font-mono-tech text-xs" style={{ color: "var(--text-muted)" }}>
                   Informativas ({medias.length})
                 </h2>
                 <div className="mt-3 grid gap-3">
@@ -172,6 +201,7 @@ export default async function AdminAlertasPage() {
 function AlertaCard({ alerta: a }: { alerta: AlertaItem }) {
   const sev = SEV_STYLES[a.severidad];
   const Icon = TIPO_ICONS[a.tipo];
+  const cta = alertaHref(a);
 
   return (
     <article
@@ -199,6 +229,19 @@ function AlertaCard({ alerta: a }: { alerta: AlertaItem }) {
           </p>
         </div>
       </div>
+      {cta && (
+        <Link
+          href={cta.href}
+          className="shrink-0 self-center inline-flex items-center gap-1.5 rounded px-3 py-2 text-xs font-black uppercase transition hover:opacity-80"
+          style={{
+            border: `1px solid ${sev.border}`,
+            color: sev.icon,
+            background: "var(--bg-elevated)",
+          }}
+        >
+          {cta.label} <ArrowRight size={12} />
+        </Link>
+      )}
     </article>
   );
 }

@@ -1,10 +1,54 @@
 import { createHash } from "crypto";
 
+import type { Prisma } from "@prisma/client";
+
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { esRolEquipo } from "@/lib/roles";
 
 type PagoContext = { params: Promise<{ id: string }> };
+
+/**
+ * Reverses a payment's impact on a factura's balance and recomputes its estado
+ * based on the resulting balance and due date. Use this whenever a previously
+ * applied payment is rejected or marked anomalous.
+ */
+async function reverseFacturaBalance(
+  tx: Prisma.TransactionClient,
+  facturaId: string,
+  monto: number,
+) {
+  const factura = await tx.factura.findUnique({
+    where: { id: facturaId },
+    select: { montoPagado: true, total: true, fechaVencimiento: true, estado: true },
+  });
+  if (!factura) return;
+
+  // Don't fight ANULADA — that's an explicit operator decision
+  if (factura.estado === "ANULADA") return;
+
+  const nuevoMontoPagado = Math.max(0, Number(factura.montoPagado) - monto);
+  const nuevoSaldo = Math.max(0, Number(factura.total) - nuevoMontoPagado);
+
+  let nuevoEstado: "PENDIENTE" | "PARCIAL" | "PAGADA" | "VENCIDA";
+  if (nuevoSaldo <= 0.005) {
+    nuevoEstado = "PAGADA";
+  } else if (nuevoMontoPagado > 0) {
+    nuevoEstado = "PARCIAL";
+  } else {
+    const vencida = factura.fechaVencimiento && factura.fechaVencimiento < new Date();
+    nuevoEstado = vencida ? "VENCIDA" : "PENDIENTE";
+  }
+
+  await tx.factura.update({
+    where: { id: facturaId },
+    data: {
+      montoPagado: nuevoMontoPagado,
+      saldoPendiente: nuevoSaldo,
+      estado: nuevoEstado,
+    },
+  });
+}
 
 export async function PATCH(request: Request, context: PagoContext) {
   const session = await auth();
@@ -68,20 +112,18 @@ export async function PATCH(request: Request, context: PagoContext) {
         nuevoEstado = "RECHAZADO";
         logAccion = "REVERTIR_PAGO";
 
-        // Reverse factura if payment was already applied
-        if (!pago.esAnomalo) {
-          await tx.factura.update({
-            where: { id: pago.facturaId },
-            data: {
-              montoPagado: { decrement: Number(pago.monto) },
-              saldoPendiente: { increment: Number(pago.monto) },
-              estado: "PARCIAL",
-            },
-          });
+        const alreadyApplied = pago.estado === "CONFIRMADO" || !pago.esAnomalo;
+        if (alreadyApplied) {
+          await reverseFacturaBalance(tx, pago.facturaId, Number(pago.monto));
         }
       } else {
         nuevoEstado = "ANOMALO";
         logAccion = "MARCAR_ANOMALIA";
+
+        const alreadyApplied = pago.estado === "CONFIRMADO" || !pago.esAnomalo;
+        if (alreadyApplied) {
+          await reverseFacturaBalance(tx, pago.facturaId, Number(pago.monto));
+        }
       }
 
       const updated = await tx.pago.update({

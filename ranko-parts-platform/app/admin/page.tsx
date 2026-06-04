@@ -72,10 +72,11 @@ export default async function AdminPage() {
         {/* Header */}
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-sm font-bold uppercase tracking-[0.18em]" style={{ color: "var(--color-gold)" }}>
+            <p className="font-mono-tech inline-flex items-center gap-2 text-xs" style={{ color: "var(--color-gold)" }}>
+              <span className="block h-px w-6" style={{ background: "var(--color-gold)" }} />
               Ranko Parts SaaS
             </p>
-            <h1 className="mt-2 text-4xl font-black uppercase">Dashboard ejecutivo</h1>
+            <h1 className="font-display-kinetic--tight mt-3 text-3xl uppercase leading-tight sm:text-4xl">Dashboard ejecutivo</h1>
             <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
               {session?.user?.name ?? session?.user?.email} ·{" "}
               <span className="font-mono font-bold" style={{ color: "var(--color-gold)" }}>
@@ -85,10 +86,12 @@ export default async function AdminPage() {
           </div>
           <Link
             href="/admin/reportes"
-            className="hidden shrink-0 items-center gap-2 px-4 py-2.5 text-xs font-black uppercase text-black transition hover:opacity-90 sm:inline-flex"
+            className="group hidden shrink-0 items-center gap-2 rounded-sm px-5 py-3 text-xs font-black uppercase tracking-wider text-black shadow-[0_8px_24px_-8px_rgba(245,197,24,0.5)] transition-all hover:shadow-[0_12px_32px_-8px_rgba(245,197,24,0.8)] sm:inline-flex"
             style={{ background: "var(--color-gold)" }}
           >
-            <BarChart3 size={14} /> Reportes completos
+            <BarChart3 size={14} />
+            <span>Reportes completos</span>
+            <ArrowRight size={12} className="transition-transform group-hover:translate-x-1" />
           </Link>
         </div>
 
@@ -107,17 +110,35 @@ export default async function AdminPage() {
           </div>
         )}
 
-        {/* KPI band */}
+        {/* KPI band — "Data-Dense" treatment recommended by ui-ux-pro-max for
+            admin/financial dashboards. Gold left rule + small index + value
+            front-and-center, lighter helper. */}
         <section className="mt-8 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          {dashboard.metrics.map((m) => (
+          {dashboard.metrics.map((m, idx) => (
             <article
               key={m.label}
-              className="p-5"
-              style={{ border: "1px solid var(--border)", background: "var(--bg-card)" }}
+              className="group relative overflow-hidden p-5 transition-colors hover:border-[var(--color-gold)]/40"
+              style={{
+                border: "1px solid var(--border)",
+                borderLeft: "2px solid var(--color-gold)",
+                background: "var(--bg-card)",
+              }}
             >
-              <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>{m.label}</p>
-              <p className="mt-3 font-mono text-3xl font-black">{m.value}</p>
-              <p className="mt-1 text-xs" style={{ color: "var(--text-muted)" }}>{m.helper}</p>
+              <span
+                aria-hidden="true"
+                className="font-mono-tech absolute right-3 top-3 text-[10px] opacity-50"
+                style={{ color: "var(--color-gold)" }}
+              >
+                K{String(idx + 1).padStart(2, "0")}
+              </span>
+              <p
+                className="font-mono-tech text-[10px]"
+                style={{ color: "var(--text-muted)" }}
+              >
+                {m.label}
+              </p>
+              <p className="mt-3 font-mono text-3xl font-black leading-none">{m.value}</p>
+              <p className="mt-2 text-xs" style={{ color: "var(--text-muted)" }}>{m.helper}</p>
             </article>
           ))}
         </section>
@@ -131,7 +152,7 @@ export default async function AdminPage() {
             style={{ border: "1px solid var(--border)", background: "var(--bg-card)" }}
           >
             <div className="flex items-center justify-between">
-              <p className="text-xs font-black uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+              <p className="font-mono-tech text-xs" style={{ color: "var(--text-muted)" }}>
                 Ingresos — últimos 7 días
               </p>
               <p className="font-mono text-sm font-black" style={{ color: "var(--color-gold)" }}>
@@ -155,7 +176,7 @@ export default async function AdminPage() {
             className="min-w-[220px] p-5"
             style={{ border: "1px solid var(--border)", background: "var(--bg-card)" }}
           >
-            <p className="text-xs font-black uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+            <p className="font-mono-tech text-xs" style={{ color: "var(--text-muted)" }}>
               Atención requerida
             </p>
             <div className="mt-4 grid gap-2">
@@ -199,7 +220,7 @@ export default async function AdminPage() {
 
         {/* Module quick-access */}
         <section className="mt-8">
-          <p className="text-xs font-black uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+          <p className="font-mono-tech text-xs" style={{ color: "var(--text-muted)" }}>
             Módulos
           </p>
           <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">

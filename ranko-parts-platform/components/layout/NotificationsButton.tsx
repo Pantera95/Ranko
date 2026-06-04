@@ -1,6 +1,7 @@
 "use client";
 
 import { AlertTriangle, Bell, Check, CreditCard, Package, TrendingDown, X } from "lucide-react";
+import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 type AlertaNotif = {
@@ -82,6 +83,24 @@ export function NotificationsButton() {
     }
   }
 
+  async function dismissOne(id: string) {
+    // Optimistic — remove immediately, restore if the request fails
+    const prevAlertas = alertas;
+    const prevTotal = total;
+    setAlertas((list) => list.filter((a) => a.id !== id));
+    setTotal((n) => Math.max(0, n - 1));
+    try {
+      const res = await fetch(`/api/admin/alertas/${id}`, { method: "PATCH" });
+      if (!res.ok) {
+        setAlertas(prevAlertas);
+        setTotal(prevTotal);
+      }
+    } catch {
+      setAlertas(prevAlertas);
+      setTotal(prevTotal);
+    }
+  }
+
   return (
     <div className="relative" ref={containerRef}>
       <button
@@ -130,7 +149,7 @@ export function NotificationsButton() {
             >
               <div className="flex items-center gap-2">
                 <Bell size={14} style={{ color: "var(--color-gold)" }} />
-                <p className="text-xs font-black uppercase tracking-widest" style={{ color: "var(--text-primary)" }}>
+                <p className="font-mono-tech text-xs" style={{ color: "var(--text-primary)" }}>
                   Alertas
                 </p>
                 {total > 0 && (
@@ -179,7 +198,7 @@ export function NotificationsButton() {
               ) : (
                 <div className="divide-y" style={{ borderColor: "var(--border-subtle)" }}>
                   {alertas.map((a) => (
-                    <div key={a.id} className="flex gap-3 px-4 py-3">
+                    <div key={a.id} className="group flex gap-3 px-4 py-3">
                       <div
                         className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full"
                         style={{
@@ -194,9 +213,21 @@ export function NotificationsButton() {
                           <p className="text-xs font-bold leading-tight" style={{ color: "var(--text-primary)" }}>
                             {a.titulo}
                           </p>
-                          <span className="shrink-0 font-mono text-[10px]" style={{ color: "var(--text-muted)" }}>
-                            {timeAgo(a.createdAt)}
-                          </span>
+                          <div className="flex shrink-0 items-center gap-1.5">
+                            <span className="font-mono text-[10px]" style={{ color: "var(--text-muted)" }}>
+                              {timeAgo(a.createdAt)}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => dismissOne(a.id)}
+                              aria-label="Marcar como leída"
+                              title="Marcar como leída"
+                              className="rounded p-0.5 opacity-0 transition-opacity hover:bg-[var(--bg-elevated)] group-hover:opacity-100"
+                              style={{ color: "var(--text-muted)" }}
+                            >
+                              <X size={11} />
+                            </button>
+                          </div>
                         </div>
                         <p className="mt-0.5 text-[11px] leading-4" style={{ color: "var(--text-muted)" }}>
                           {a.mensaje.length > 80 ? `${a.mensaje.slice(0, 80)}…` : a.mensaje}
@@ -222,14 +253,14 @@ export function NotificationsButton() {
               className="px-4 py-2.5"
               style={{ borderTop: "1px solid var(--border)" }}
             >
-              <a
+              <Link
                 href="/admin/alertas"
                 className="block text-center text-[10px] font-black uppercase transition hover:opacity-70"
                 style={{ color: "var(--color-gold)" }}
                 onClick={() => setOpen(false)}
               >
                 Ver todas las alertas →
-              </a>
+              </Link>
             </div>
           </div>
         </>

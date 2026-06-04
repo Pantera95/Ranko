@@ -38,25 +38,66 @@ export async function POST(request: Request) {
   const exists = await prisma.producto.findFirst({ where: { slug: { startsWith: baseSlug } } });
   const slug = exists ? `${baseSlug}-${Date.now()}` : baseSlug;
 
+  // Optional initial stock per almacén — body.stockInicial = { [almacenId]: cantidad }
+  const stockInicial: Record<string, number> =
+    body?.stockInicial && typeof body.stockInicial === "object" ? body.stockInicial : {};
+
+  // Optional initial image URLs (max 12, deduped, http(s) only)
+  const imagenes: string[] = [];
+  if (Array.isArray(body?.imagenes)) {
+    const seen = new Set<string>();
+    for (const raw of body.imagenes as unknown[]) {
+      if (typeof raw !== "string") continue;
+      const url = raw.trim();
+      if (!url || seen.has(url) || !/^https?:\/\/\S+$/i.test(url)) continue;
+      seen.add(url);
+      imagenes.push(url);
+      if (imagenes.length >= 12) break;
+    }
+  }
+
   try {
-    const product = await prisma.producto.create({
-      data: {
-        sku,
-        nombre,
-        marca,
-        categoria,
-        subcategoria: (body?.subcategoria ?? "").trim() || null,
-        descripcion: (body?.descripcion ?? "").trim() || null,
-        precio,
-        costo,
-        codigoOEM: (body?.codigoOEM ?? "").trim() || null,
-        codigoAftermarket: (body?.codigoAftermarket ?? "").trim() || null,
-        slug,
-        activo: body?.activo !== false,
-        destacado: body?.destacado === true,
-        imagenes: [],
-      },
-      select: { id: true, sku: true, nombre: true },
+    const product = await prisma.$transaction(async (tx) => {
+      const created = await tx.producto.create({
+        data: {
+          sku,
+          nombre,
+          marca,
+          categoria,
+          subcategoria: (body?.subcategoria ?? "").trim() || null,
+          descripcion: (body?.descripcion ?? "").trim() || null,
+          precio,
+          costo,
+          codigoOEM: (body?.codigoOEM ?? "").trim() || null,
+          codigoAftermarket: (body?.codigoAftermarket ?? "").trim() || null,
+          slug,
+          activo: body?.activo !== false,
+          destacado: body?.destacado === true,
+          imagenes,
+        },
+        select: { id: true, sku: true, nombre: true },
+      });
+
+      // Seed inventory rows for every active almacén so the producto can be
+      // sold without a manual DB touch. Without this, checkStockAvailability
+      // sees zero rows and rejects every sale of this new producto.
+      const almacenes = await tx.almacen.findMany({
+        where: { activo: true },
+        select: { id: true },
+      });
+
+      if (almacenes.length > 0) {
+        await tx.inventario.createMany({
+          data: almacenes.map((a) => ({
+            productoId: created.id,
+            almacenId: a.id,
+            cantidad: Math.max(0, Math.floor(Number(stockInicial[a.id] ?? 0))),
+          })),
+          skipDuplicates: true,
+        });
+      }
+
+      return created;
     });
 
     return Response.json({ ok: true, product }, { status: 201 });

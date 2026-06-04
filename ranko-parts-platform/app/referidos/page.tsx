@@ -1,4 +1,5 @@
 import { Gift, Share2, Star, Users } from "lucide-react";
+import Link from "next/link";
 
 import { PublicNavbar } from "@/components/layout/PublicNavbar";
 import { WhatsAppFloating } from "@/components/layout/WhatsAppFloating";
@@ -38,8 +39,8 @@ export default function ReferidosPage() {
           >
             <Star size={12} /> Programa de referidos
           </div>
-          <h1 className="mt-4 text-6xl font-black uppercase leading-none">
-            Refiere y gana.
+          <h1 className="font-display-kinetic--tight mt-5 text-5xl uppercase leading-[1.02] sm:text-6xl lg:text-7xl">
+            Refiere y <span style={{ color: "var(--color-gold)" }}>gana.</span>
           </h1>
           <p className="mt-6 max-w-3xl text-xl font-semibold leading-9" style={{ color: "var(--text-secondary)" }}>
             Clientes activos pueden referir talleres, empresas y distribuidores para ganar credito
@@ -55,13 +56,13 @@ export default function ReferidosPage() {
             >
               Comenzar a referir
             </a>
-            <a
+            <Link
               href="/cliente"
               className="inline-flex h-12 items-center justify-center px-6 text-sm font-black uppercase transition"
               style={{ border: "1px solid var(--border)", color: "var(--text-primary)" }}
             >
               Ver mi portal
-            </a>
+            </Link>
           </div>
         </div>
       </section>
@@ -69,10 +70,11 @@ export default function ReferidosPage() {
       {/* Pasos */}
       <section className="px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-5xl">
-          <p className="text-sm font-bold uppercase tracking-[0.18em]" style={{ color: "var(--color-gold)" }}>
-            Como funciona
+          <p className="font-mono-tech inline-flex items-center gap-2 text-xs" style={{ color: "var(--color-gold)" }}>
+            <span className="block h-px w-6" style={{ background: "var(--color-gold)" }} />
+            Cómo funciona
           </p>
-          <h2 className="mt-3 text-4xl font-black uppercase">3 pasos simples</h2>
+          <h2 className="font-display-kinetic mt-3 text-3xl uppercase leading-tight sm:text-4xl">3 pasos simples</h2>
           <div className="mt-10 grid gap-6 md:grid-cols-3">
             {pasos.map((paso, i) => (
               <article
@@ -103,7 +105,7 @@ export default function ReferidosPage() {
         style={{ background: "var(--color-gold)" }}
       >
         <div className="mx-auto max-w-5xl text-center text-black">
-          <h2 className="text-4xl font-black uppercase">¿Listo para referir?</h2>
+          <h2 className="font-display-kinetic--tight text-3xl uppercase leading-tight sm:text-4xl">¿Listo para referir?</h2>
           <p className="mt-4 text-lg font-semibold">
             Escríbenos por WhatsApp y te explicamos los beneficios actuales del programa.
           </p>

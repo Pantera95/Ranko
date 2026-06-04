@@ -94,8 +94,13 @@ export default async function FacturaDetailPage({ params }: Props) {
   const montoPagado = Number(f.montoPagado);
   const saldo = Number(f.saldoPendiente);
   const isOverdue = f.estado === "VENCIDA";
+  // Server component runs once per request; Date.now() is acceptable here as
+  // "request time", but React Compiler flags it as impure. eslint-disable
+  // keeps the warning quiet without changing behavior.
+  // eslint-disable-next-line react-compiler/react-compiler
+  const nowMs = Date.now();
   const diasVencida = isOverdue
-    ? Math.floor((Date.now() - f.fechaVencimiento.getTime()) / 86400000)
+    ? Math.floor((nowMs - f.fechaVencimiento.getTime()) / 86400000)
     : 0;
 
   return (
@@ -347,7 +352,7 @@ export default async function FacturaDetailPage({ params }: Props) {
             >
               <div className="flex items-center gap-2">
                 <CheckCircle2 size={13} style={{ color: "var(--color-gold)" }} />
-                <p className="text-xs font-black uppercase tracking-widest" style={{ color: "var(--text-primary)" }}>
+                <p className="font-mono-tech text-xs" style={{ color: "var(--text-primary)" }}>
                   Pagos registrados ({f.pagos.length})
                 </p>
               </div>
@@ -406,7 +411,7 @@ export default async function FacturaDetailPage({ params }: Props) {
               style={{ borderBottom: "1px solid var(--border)", background: "var(--bg-elevated)" }}
             >
               <Clock size={13} style={{ color: "var(--color-gold)" }} />
-              <p className="text-xs font-black uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+              <p className="font-mono-tech text-xs" style={{ color: "var(--text-muted)" }}>
                 Historial de cambios
               </p>
             </div>

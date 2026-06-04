@@ -157,10 +157,10 @@ export default async function AdminReferidosPage() {
 
         {/* Header */}
         <div>
-          <p className="text-sm font-bold uppercase tracking-[0.18em]" style={{ color: "var(--color-gold)" }}>
+          <p className="font-mono-tech text-xs" style={{ color: "var(--color-gold)" }}>
             Inteligencia
           </p>
-          <h1 className="mt-2 text-4xl font-black uppercase">Programa de referidos</h1>
+          <h1 className="mt-2 font-display-kinetic--tight text-3xl uppercase leading-tight sm:text-4xl">Programa de referidos</h1>
           <p className="mt-2 text-sm leading-6" style={{ color: "var(--text-secondary)" }}>
             Clientes que refieren y estado de activación de cada referido registrado.
           </p>
@@ -194,7 +194,7 @@ export default async function AdminReferidosPage() {
 
           {/* Referidores */}
           <section>
-            <h2 className="flex items-center gap-2 text-xs font-black uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+            <h2 className="flex items-center gap-2 font-mono-tech text-xs" style={{ color: "var(--text-muted)" }}>
               <Share2 size={13} /> Clientes referidores ({referidores.length})
             </h2>
             <div className="mt-3 grid gap-3">
@@ -244,7 +244,7 @@ export default async function AdminReferidosPage() {
 
           {/* Tabla de referidos */}
           <section>
-            <h2 className="flex items-center gap-2 text-xs font-black uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+            <h2 className="flex items-center gap-2 font-mono-tech text-xs" style={{ color: "var(--text-muted)" }}>
               <UserCheck size={13} /> Todos los referidos ({referidos.length})
             </h2>
             {referidos.length === 0 ? (

@@ -30,6 +30,17 @@ export async function PATCH(request: Request, context: ClienteContext) {
     data.scoring = body.scoring;
   }
 
+  // Vendedor assignment (standalone or within editMode)
+  if (body?.vendedorId !== undefined) {
+    data.usuarioId = body.vendedorId === null || body.vendedorId === "" ? null : String(body.vendedorId);
+  }
+
+  // Codigo referido (standalone update)
+  if (typeof body?.codigoReferido === "string") {
+    const code = body.codigoReferido.trim().toUpperCase();
+    if (code) data.codigoReferido = code;
+  }
+
   // Full profile edit (sent when body.editMode === true)
   if (body?.editMode === true) {
     const nombre = (body?.nombre ?? "").toString().trim();
@@ -64,6 +75,9 @@ export async function PATCH(request: Request, context: ClienteContext) {
     data.limiteCredito = limiteCredito;
     data.notas = notas || null;
 
+    const codigoReferidoEdit = (body?.codigoReferido ?? "").toString().trim().toUpperCase();
+    if (codigoReferidoEdit) data.codigoReferido = codigoReferidoEdit;
+
     if (fuente && FUENTES_VALIDAS.includes(fuente as typeof FUENTES_VALIDAS[number])) {
       data.fuente = fuente;
     }
@@ -84,7 +98,11 @@ export async function PATCH(request: Request, context: ClienteContext) {
     });
 
     return Response.json({ ok: true, cliente });
-  } catch {
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "";
+    if (msg.includes("Unique constraint") || msg.includes("unique")) {
+      return Response.json({ ok: false, error: "El código de referido ya está en uso" }, { status: 409 });
+    }
     return Response.json(
       { ok: false, error: "No se pudo actualizar el cliente" },
       { status: 503 },

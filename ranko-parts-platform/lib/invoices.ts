@@ -35,6 +35,7 @@ export type InvoicesData = {
   aging: AgingBand[];
   metrics: { label: string; value: string; helper: string; danger?: boolean }[];
   isFallback: boolean;
+  filterClienteNombre?: string;
 };
 
 const hoy = new Date();
@@ -110,9 +111,10 @@ const fallbackInvoices: InvoiceRow[] = [
   },
 ];
 
-export async function getInvoicesData(): Promise<InvoicesData> {
+export async function getInvoicesData(clienteId?: string): Promise<InvoicesData> {
   try {
     const rows = await prisma.factura.findMany({
+      where: clienteId ? { clienteId } : undefined,
       orderBy: { createdAt: "desc" },
       take: 300,
       include: {
@@ -121,6 +123,7 @@ export async function getInvoicesData(): Promise<InvoicesData> {
         _count: { select: { items: true } },
       },
     });
+    const filterClienteNombre = clienteId && rows.length > 0 ? rows[0].cliente.nombre : undefined;
 
     const invoices: InvoiceRow[] = rows.map((f) => {
       const venc = f.fechaVencimiento.toISOString().slice(0, 10);
@@ -146,7 +149,7 @@ export async function getInvoicesData(): Promise<InvoicesData> {
       };
     });
 
-    return buildInvoicesData(invoices, false);
+    return { ...buildInvoicesData(invoices, false), filterClienteNombre };
   } catch {
     console.warn("Facturas fallback activo: base de datos no disponible.");
     return buildInvoicesData(fallbackInvoices, true);

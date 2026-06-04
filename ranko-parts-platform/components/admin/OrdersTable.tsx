@@ -212,7 +212,7 @@ export function OrdersTable({ initialOrders, facturasSinOrden, isFallback }: Ord
           onSubmit={crearOrden}
           style={{ border: "1px solid var(--border)", borderTop: "none", background: "var(--bg-elevated)" }}
         >
-          <p className="text-xs font-black uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>
+          <p className="font-mono-tech text-xs" style={{ color: "var(--text-secondary)" }}>
             Crear orden desde factura
           </p>
           <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -293,7 +293,7 @@ export function OrdersTable({ initialOrders, facturasSinOrden, isFallback }: Ord
       {/* Table */}
       <div className="mt-4 overflow-x-auto" style={{ border: "1px solid var(--border)" }}>
         <table className="min-w-[960px] w-full border-collapse text-left text-sm" style={{ background: "var(--bg-card)" }}>
-          <thead className="text-xs uppercase" style={{ background: "var(--bg-base)", color: "var(--text-muted)" }}>
+          <thead className="font-mono-tech text-xs" style={{ background: "var(--bg-base)", color: "var(--text-muted)" }}>
             <tr>
               <th className="w-8 px-4 py-3" />
               <th className="px-4 py-3">Codigo</th>

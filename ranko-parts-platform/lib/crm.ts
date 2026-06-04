@@ -5,6 +5,7 @@ import { formatUsd } from "@/lib/formatters";
 
 export type PipelineLead = {
   id: string;
+  clienteId: string;
   cliente: string;
   empresa?: string | null;
   tipo: string;
@@ -56,6 +57,7 @@ const orderedStages: EstadoLead[] = [
 const fallbackLeads: PipelineLead[] = [
   {
     id: "demo-lead-b2b-1",
+    clienteId: "demo-cliente-1",
     cliente: "Taller Demo Caracas",
     empresa: "Taller Demo Caracas",
     tipo: "TALLER",
@@ -68,6 +70,7 @@ const fallbackLeads: PipelineLead[] = [
   },
   {
     id: "demo-lead-b2b-2",
+    clienteId: "demo-cliente-2",
     cliente: "Distribuidor Oriente",
     empresa: "Distribuidor Oriente",
     tipo: "DISTRIBUIDOR_LOCAL",
@@ -80,6 +83,7 @@ const fallbackLeads: PipelineLead[] = [
   },
   {
     id: "demo-lead-b2c-1",
+    clienteId: "demo-cliente-3",
     cliente: "Cliente Wrangler",
     tipo: "MINORISTA",
     ciudad: "Caracas",
@@ -107,6 +111,7 @@ export async function getCrmPipelineData(): Promise<CrmPipelineData> {
 
     const mappedLeads: PipelineLead[] = leads.map((lead) => ({
       id: lead.id,
+      clienteId: lead.cliente.id,
       cliente: lead.cliente.nombre,
       empresa: lead.cliente.empresa,
       tipo: lead.cliente.tipo,

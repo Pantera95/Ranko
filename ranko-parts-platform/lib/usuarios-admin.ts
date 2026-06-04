@@ -142,3 +142,27 @@ export const ROL_STYLES: Record<string, string> = {
 };
 
 export { PERMISOS_ROL };
+
+// ─── Simple list for dropdowns ────────────────────────────────────────────────
+
+export type VendedorOption = { id: string; nombre: string; rol: string };
+
+const FALLBACK_VENDEDORES: VendedorOption[] = [
+  { id: "demo-admin", nombre: "Admin Ranko", rol: "ADMIN" },
+];
+
+export async function getVendedoresSimple(): Promise<VendedorOption[]> {
+  try {
+    const usuarios = await prisma.usuario.findMany({
+      where: {
+        activo: true,
+        rol: { in: ["MASTER_ADMIN", "ADMIN", "VENDEDOR"] },
+      },
+      select: { id: true, nombre: true, rol: true },
+      orderBy: [{ rol: "asc" }, { nombre: "asc" }],
+    });
+    return usuarios.map((u) => ({ id: u.id, nombre: u.nombre, rol: u.rol }));
+  } catch {
+    return FALLBACK_VENDEDORES;
+  }
+}

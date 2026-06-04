@@ -22,10 +22,10 @@ export default async function NuevaFacturaPage() {
         </div>
 
         <div className="mt-4">
-          <p className="text-sm font-bold uppercase tracking-[0.18em] text-[var(--color-gold)]">
+          <p className="font-mono-tech text-xs text-[var(--color-gold)]">
             Nueva
           </p>
-          <h1 className="mt-2 text-4xl font-black uppercase">Emitir factura</h1>
+          <h1 className="mt-2 font-display-kinetic--tight text-3xl uppercase leading-tight sm:text-4xl">Emitir factura</h1>
           <p className="mt-3 leading-7" style={{ color: "var(--text-secondary)" }}>
             Crea una factura directa sin cotización previa. Selecciona cliente, agrega items,
             define vencimiento y método de pago. La factura quedará en estado{" "}

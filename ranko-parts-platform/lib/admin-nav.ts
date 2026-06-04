@@ -36,18 +36,53 @@ export const ADMIN_NAV_GROUPS: NavGroup[] = [
   {
     label: "Ventas",
     items: [
-      { href: "/admin/crm", label: "CRM / Pipeline", icon: LayoutGrid },
-      { href: "/admin/clientes", label: "Clientes", icon: Users },
-      { href: "/admin/cotizaciones", label: "Cotizaciones", icon: FileText },
-      { href: "/admin/facturacion", label: "Facturación", icon: Receipt },
+      {
+        href: "/admin/crm",
+        label: "CRM / Pipeline",
+        icon: LayoutGrid,
+        roles: ["MASTER_ADMIN", "ADMIN", "VENDEDOR"],
+      },
+      {
+        href: "/admin/clientes",
+        label: "Clientes",
+        icon: Users,
+        roles: ["MASTER_ADMIN", "ADMIN", "VENDEDOR"],
+      },
+      {
+        href: "/admin/cotizaciones",
+        label: "Cotizaciones",
+        icon: FileText,
+        roles: ["MASTER_ADMIN", "ADMIN", "VENDEDOR"],
+      },
+      {
+        href: "/admin/facturacion",
+        label: "Facturación",
+        icon: Receipt,
+        roles: ["MASTER_ADMIN", "ADMIN", "VENDEDOR"],
+      },
     ],
   },
   {
     label: "Finanzas",
     items: [
-      { href: "/admin/deudas", label: "Panel de deudas", icon: HandCoins },
-      { href: "/admin/pagos", label: "Pagos", icon: HandCoins },
-      { href: "/admin/alertas", label: "Alertas anómalas", icon: AlertTriangle },
+      {
+        href: "/admin/deudas",
+        label: "Panel de deudas",
+        icon: HandCoins,
+        roles: ["MASTER_ADMIN", "ADMIN"],
+      },
+      {
+        href: "/admin/pagos",
+        label: "Pagos",
+        icon: HandCoins,
+        roles: ["MASTER_ADMIN", "ADMIN"],
+      },
+      {
+        href: "/admin/alertas",
+        label: "Alertas anómalas",
+        icon: AlertTriangle,
+        roles: ["MASTER_ADMIN", "ADMIN"],
+      },
     ],
   },
   {
@@ -56,23 +91,58 @@ export const ADMIN_NAV_GROUPS: NavGroup[] = [
       { href: "/admin/catalogo", label: "Catálogo", icon: Package },
       { href: "/admin/inventario", label: "Inventario", icon: Boxes },
       { href: "/admin/ordenes", label: "Órdenes", icon: Truck },
-      { href: "/admin/ecommerce", label: "E-Commerce", icon: ShoppingCart },
+      {
+        href: "/admin/ecommerce",
+        label: "E-Commerce",
+        icon: ShoppingCart,
+        roles: ["MASTER_ADMIN", "ADMIN"],
+      },
     ],
   },
   {
     label: "Inteligencia",
     items: [
-      { href: "/admin/reportes", label: "Reportes / BI", icon: BarChart3 },
-      { href: "/admin/automatizacion", label: "Automatización", icon: Bot },
-      { href: "/admin/referidos", label: "Referidos", icon: Users },
+      {
+        href: "/admin/reportes",
+        label: "Reportes / BI",
+        icon: BarChart3,
+        roles: ["MASTER_ADMIN", "ADMIN", "VIEWER"],
+      },
+      {
+        href: "/admin/automatizacion",
+        label: "Automatización",
+        icon: Bot,
+        roles: ["MASTER_ADMIN", "ADMIN"],
+      },
+      {
+        href: "/admin/referidos",
+        label: "Referidos",
+        icon: Users,
+        roles: ["MASTER_ADMIN", "ADMIN"],
+      },
     ],
   },
   {
     label: "Sistema",
     items: [
-      { href: "/admin/usuarios", label: "Usuarios", icon: UserCog, roles: ["MASTER_ADMIN", "ADMIN"] },
-      { href: "/admin/logs", label: "Logs auditoría", icon: FileClock, roles: ["MASTER_ADMIN"] },
-      { href: "/admin/configuracion", label: "Configuración", icon: Settings },
+      {
+        href: "/admin/usuarios",
+        label: "Usuarios",
+        icon: UserCog,
+        roles: ["MASTER_ADMIN", "ADMIN"],
+      },
+      {
+        href: "/admin/logs",
+        label: "Logs auditoría",
+        icon: FileClock,
+        roles: ["MASTER_ADMIN"],
+      },
+      {
+        href: "/admin/configuracion",
+        label: "Configuración",
+        icon: Settings,
+        roles: ["MASTER_ADMIN", "ADMIN"],
+      },
     ],
   },
 ];

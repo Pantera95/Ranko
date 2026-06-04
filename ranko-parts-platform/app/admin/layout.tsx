@@ -4,6 +4,8 @@ import { AdminSearch } from "@/components/layout/AdminSearch";
 import { AdminSidebar } from "@/components/layout/AdminSidebar";
 import { NotificationsButton } from "@/components/layout/NotificationsButton";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
+import { getAdminNavCounts } from "@/lib/admin-nav-counts.server";
+import { esRolEquipo } from "@/lib/roles";
 
 export default async function AdminLayout({
   children,
@@ -11,6 +13,11 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }>) {
   const session = await auth();
+  // Only fetch nav badge counts for team members — a stray CLIENTE session
+  // shouldn't trigger admin-scoped queries.
+  const counts = esRolEquipo(session?.user?.rol)
+    ? await getAdminNavCounts()
+    : undefined;
 
   return (
     <div className="min-h-screen lg:flex" style={{ background: "var(--bg-base)", color: "var(--text-primary)" }}>
@@ -18,6 +25,7 @@ export default async function AdminLayout({
         email={session?.user?.email}
         name={session?.user?.name}
         role={session?.user?.rol}
+        counts={counts}
       />
       <div className="min-w-0 flex-1">
         <header
@@ -33,6 +41,7 @@ export default async function AdminLayout({
               email={session?.user?.email}
               name={session?.user?.name}
               role={session?.user?.rol}
+              counts={counts}
             />
             <div className="min-w-0 flex-1">
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--color-gold)]">

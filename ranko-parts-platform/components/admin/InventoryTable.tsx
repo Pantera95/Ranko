@@ -130,7 +130,7 @@ export function InventoryTable({ initialItems, isFallback }: InventoryTableProps
 
       <div className="mt-4 overflow-x-auto" style={{ border: "1px solid var(--border)" }}>
         <table className="min-w-[1080px] w-full border-collapse text-left text-sm" style={{ background: "var(--bg-card)" }}>
-          <thead className="text-xs uppercase" style={{ background: "var(--bg-base)", color: "var(--text-muted)" }}>
+          <thead className="font-mono-tech text-xs" style={{ background: "var(--bg-base)", color: "var(--text-muted)" }}>
             <tr>
               <th className="px-4 py-3">Producto</th>
               <th className="px-4 py-3">Almacen</th>

@@ -24,10 +24,10 @@ export default async function ClienteReferidosPage() {
   return (
     <main className="p-4 sm:p-6" style={{ color: "var(--text-primary)" }}>
       <section className="mx-auto max-w-4xl">
-        <p className="text-sm font-bold uppercase tracking-[0.18em]" style={{ color: "var(--color-gold)" }}>
+        <p className="font-mono-tech text-xs" style={{ color: "var(--color-gold)" }}>
           Portal del cliente
         </p>
-        <h1 className="mt-2 text-4xl font-black uppercase">Mis referidos</h1>
+        <h1 className="mt-2 font-display-kinetic--tight text-3xl uppercase leading-tight sm:text-4xl">Mis referidos</h1>
         <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
           Comparte tu codigo y acumula beneficios cada vez que un nuevo cliente compre en Ranko Parts.
         </p>
@@ -172,7 +172,7 @@ export default async function ClienteReferidosPage() {
         {/* Lista de referidos */}
         {data.referidos.length > 0 ? (
           <section className="mt-10">
-            <h2 className="text-xs font-black uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+            <h2 className="font-mono-tech text-xs" style={{ color: "var(--text-muted)" }}>
               Clientes que referiste
             </h2>
             <div

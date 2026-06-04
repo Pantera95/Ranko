@@ -22,6 +22,7 @@ export type CatalogProduct = {
   stock: number;
   destacado: boolean;
   imageUrl?: string;
+  imagenes: string[];
   compatibilidades: string[];
 };
 
@@ -52,6 +53,7 @@ const fallbackProducts: CatalogProduct[] = [
     stock: 24,
     destacado: true,
     compatibilidades: ["Jeep Grand Cherokee 2011-2020", "Dodge Durango 2011-2020"],
+    imagenes: [],
   },
   {
     sku: "KN-33-2457",
@@ -64,6 +66,7 @@ const fallbackProducts: CatalogProduct[] = [
     stock: 11,
     destacado: true,
     compatibilidades: ["Jeep Wrangler 2012-2018", "Dodge Charger 2011-2020"],
+    imagenes: [],
   },
   {
     sku: "MOP-68191349AC",
@@ -76,6 +79,7 @@ const fallbackProducts: CatalogProduct[] = [
     stock: 7,
     destacado: false,
     compatibilidades: ["Jeep Grand Cherokee 2014-2021"],
+    imagenes: [],
   },
 ];
 
@@ -136,6 +140,7 @@ export async function getCatalogPageData(filters: CatalogFilters): Promise<Catal
       stock: product.inventarios.reduce((total, item) => total + item.cantidad, 0),
       destacado: product.destacado,
       imageUrl: product.imagenes[0],
+      imagenes: product.imagenes,
       compatibilidades: product.compatibilidades.map(
         (item) => `${item.marca} ${item.modelo} ${item.anioDesde}-${item.anioHasta}`,
       ),
@@ -209,6 +214,7 @@ export async function getProductBySlug(slug: string): Promise<CatalogProduct | n
       stock: product.inventarios.reduce((total, item) => total + item.cantidad, 0),
       destacado: product.destacado,
       imageUrl: product.imagenes[0],
+      imagenes: product.imagenes,
       compatibilidades: product.compatibilidades.map(
         (item) => `${item.marca} ${item.modelo} ${item.anioDesde}-${item.anioHasta}`,
       ),

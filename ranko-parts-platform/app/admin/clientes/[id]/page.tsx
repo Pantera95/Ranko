@@ -1,6 +1,5 @@
 import {
   Ban,
-  Car,
   ChevronLeft,
   FileText,
   MessageSquare,
@@ -13,8 +12,12 @@ import {
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { BloquearButton } from "@/components/admin/BloquearButton";
 import { ClienteEditPanel } from "@/components/admin/ClienteEditPanel";
+import { InteraccionRowActions } from "@/components/admin/InteraccionRowActions";
+import { PortalAccesoPanel } from "@/components/admin/PortalAccesoPanel";
 import { RegistrarInteraccionModal } from "@/components/admin/RegistrarInteraccionModal";
+import VehiculosPanel from "@/components/admin/VehiculosPanel";
 import {
   getClienteDetail,
   TIPO_LABELS,
@@ -23,6 +26,7 @@ import {
   FACTURA_ESTADO_STYLES,
   COT_ESTADO_STYLES,
 } from "@/lib/cliente-detail";
+import { getVendedoresSimple } from "@/lib/usuarios-admin";
 import { cn } from "@/lib/utils";
 
 type Props = { params: Promise<{ id: string }> };
@@ -48,21 +52,12 @@ function fmtDateTime(iso: string) {
   });
 }
 
-function ScoreBar({ score }: { score: number }) {
-  const color = score >= 75 ? "var(--color-success)" : score >= 50 ? "#b45309" : "var(--color-danger)";
-  return (
-    <div className="flex items-center gap-2">
-      <div className="h-2 w-24 rounded-full" style={{ background: "var(--bg-elevated)" }}>
-        <div className="h-2 rounded-full" style={{ width: `${score}%`, background: color }} />
-      </div>
-      <span className="font-mono text-xs font-black" style={{ color }}>{score}/100</span>
-    </div>
-  );
-}
-
 export default async function ClienteDetailPage({ params }: Props) {
   const { id } = await params;
-  const c = await getClienteDetail(id);
+  const [c, vendedores] = await Promise.all([
+    getClienteDetail(id),
+    getVendedoresSimple(),
+  ]);
 
   if (!c) notFound();
 
@@ -103,7 +98,7 @@ export default async function ClienteDetailPage({ params }: Props) {
             </div>
             <div>
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-3xl font-black uppercase">{c.nombre}</h1>
+                <h1 className="font-display-kinetic--tight text-2xl uppercase leading-tight sm:text-3xl">{c.nombre}</h1>
                 <span className={cn("rounded px-2 py-0.5 text-[10px] font-black uppercase", TIPO_STYLES[c.tipo])}>
                   {TIPO_LABELS[c.tipo]}
                 </span>
@@ -150,6 +145,7 @@ export default async function ClienteDetailPage({ params }: Props) {
                 <PhoneCall size={12} /> {c.telefono}
               </a>
             )}
+            <BloquearButton clienteId={c.id} bloqueado={c.bloqueado} />
             <Link
               href={`/admin/cotizaciones/nueva?clienteId=${c.id}`}
               className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-black uppercase text-black transition hover:opacity-90"
@@ -214,8 +210,13 @@ export default async function ClienteDetailPage({ params }: Props) {
                 temperatura: c.temperatura as "CALIENTE" | "TIBIO" | "FRIO",
                 condicionPago: c.condicionPago,
                 limiteCredito: c.limiteCredito,
+                scoring: c.scoring,
+                vendedorId: c.vendedorId,
+                vendedorNombre: c.vendedorNombre,
+                codigoReferido: c.codigoReferido,
                 notas: c.notas,
               }}
+              vendedores={vendedores}
             />
 
             {/* Facturas */}
@@ -223,7 +224,7 @@ export default async function ClienteDetailPage({ params }: Props) {
               <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: "1px solid var(--border)", background: "var(--bg-elevated)" }}>
                 <div className="flex items-center gap-2">
                   <Receipt size={13} style={{ color: "var(--color-gold)" }} />
-                  <p className="text-xs font-black uppercase tracking-widest" style={{ color: "var(--text-primary)" }}>
+                  <p className="font-mono-tech text-xs" style={{ color: "var(--text-primary)" }}>
                     Últimas facturas
                   </p>
                 </div>
@@ -267,7 +268,7 @@ export default async function ClienteDetailPage({ params }: Props) {
               <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: "1px solid var(--border)", background: "var(--bg-elevated)" }}>
                 <div className="flex items-center gap-2">
                   <FileText size={13} style={{ color: "var(--color-gold)" }} />
-                  <p className="text-xs font-black uppercase tracking-widest" style={{ color: "var(--text-primary)" }}>
+                  <p className="font-mono-tech text-xs" style={{ color: "var(--text-primary)" }}>
                     Cotizaciones
                   </p>
                 </div>
@@ -304,37 +305,14 @@ export default async function ClienteDetailPage({ params }: Props) {
           <div className="grid gap-6 self-start">
 
             {/* Vehicles */}
-            <section style={{ border: "1px solid var(--border)", background: "var(--bg-card)" }}>
-              <div className="flex items-center gap-2 px-5 py-3" style={{ borderBottom: "1px solid var(--border)", background: "var(--bg-elevated)" }}>
-                <Car size={13} style={{ color: "var(--color-gold)" }} />
-                <p className="text-xs font-black uppercase tracking-widest" style={{ color: "var(--text-primary)" }}>
-                  Flota ({c.vehiculos.length})
-                </p>
-              </div>
-              {c.vehiculos.length === 0 ? (
-                <p className="p-5 text-sm" style={{ color: "var(--text-muted)" }}>Sin vehículos registrados.</p>
-              ) : (
-                <div className="divide-y" style={{ borderColor: "var(--border-subtle)" }}>
-                  {c.vehiculos.map((v) => (
-                    <div key={v.id} className="px-5 py-4">
-                      <p className="font-black uppercase" style={{ color: "var(--text-primary)" }}>
-                        {v.marca} {v.modelo} {v.anio}
-                      </p>
-                      <p className="mt-0.5 text-xs" style={{ color: "var(--text-muted)" }}>
-                        {[v.motor, v.placa].filter(Boolean).join(" · ") || "Sin detalles adicionales"}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
+            <VehiculosPanel clienteId={c.id} initial={c.vehiculos} />
 
             {/* Timeline / Interacciones */}
             <section style={{ border: "1px solid var(--border)", background: "var(--bg-card)" }}>
               <div className="flex items-center justify-between gap-2 px-5 py-3" style={{ borderBottom: "1px solid var(--border)", background: "var(--bg-elevated)" }}>
                 <div className="flex items-center gap-2">
                   <Phone size={13} style={{ color: "var(--color-gold)" }} />
-                  <p className="text-xs font-black uppercase tracking-widest" style={{ color: "var(--text-primary)" }}>
+                  <p className="font-mono-tech text-xs" style={{ color: "var(--text-primary)" }}>
                     Últimas interacciones
                   </p>
                 </div>
@@ -345,7 +323,7 @@ export default async function ClienteDetailPage({ params }: Props) {
               ) : (
                 <div className="divide-y" style={{ borderColor: "var(--border-subtle)" }}>
                   {c.ultimasInteracciones.map((i) => (
-                    <div key={i.id} className="px-5 py-4">
+                    <div key={i.id} className="group px-5 py-4">
                       <div className="flex items-center justify-between gap-2">
                         <span
                           className="rounded px-1.5 py-0.5 text-[10px] font-black uppercase"
@@ -353,9 +331,12 @@ export default async function ClienteDetailPage({ params }: Props) {
                         >
                           {INTERACCION_LABELS[i.tipo]}
                         </span>
-                        <time className="text-[10px]" style={{ color: "var(--text-muted)" }} dateTime={i.createdAt}>
-                          {fmtDateTime(i.createdAt)}
-                        </time>
+                        <div className="flex items-center gap-1.5">
+                          <time className="text-[10px]" style={{ color: "var(--text-muted)" }} dateTime={i.createdAt}>
+                            {fmtDateTime(i.createdAt)}
+                          </time>
+                          <InteraccionRowActions clienteId={c.id} interaccionId={i.id} />
+                        </div>
                       </div>
                       <p className="mt-1.5 text-xs leading-5" style={{ color: "var(--text-secondary)" }}>{i.descripcion}</p>
                       <p className="mt-1 text-[10px]" style={{ color: "var(--text-muted)" }}>{i.usuarioNombre}</p>
@@ -370,7 +351,7 @@ export default async function ClienteDetailPage({ params }: Props) {
               <section className="p-5" style={{ border: "1px solid var(--border)", background: "var(--bg-card)" }}>
                 <div className="flex items-center gap-2">
                   <Star size={13} style={{ color: "var(--color-gold)" }} />
-                  <p className="text-xs font-black uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+                  <p className="font-mono-tech text-xs" style={{ color: "var(--text-muted)" }}>
                     Crédito utilizado
                   </p>
                 </div>
@@ -396,6 +377,13 @@ export default async function ClienteDetailPage({ params }: Props) {
                 </div>
               </section>
             )}
+
+            {/* Portal access */}
+            <PortalAccesoPanel
+              clienteId={c.id}
+              portalActivo={c.portalActivo}
+              portalEmail={c.portalEmail}
+            />
           </div>
         </div>
       </div>

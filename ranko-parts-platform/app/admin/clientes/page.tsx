@@ -15,11 +15,12 @@ export default async function AdminClientesPage() {
       <section className="mx-auto max-w-7xl">
         <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
           <div>
-            <p className="text-sm font-bold uppercase tracking-[0.18em]" style={{ color: "var(--color-gold)" }}>
+            <p className="font-mono-tech inline-flex items-center gap-2 text-xs" style={{ color: "var(--color-gold)" }}>
+              <span className="block h-px w-6" style={{ background: "var(--color-gold)" }} />
               CRM
             </p>
             <div className="mt-3 flex flex-wrap items-center gap-4">
-              <h1 className="text-4xl font-black uppercase">Clientes</h1>
+              <h1 className="font-display-kinetic--tight text-3xl uppercase leading-tight sm:text-4xl">Clientes</h1>
               <NuevoClienteModal />
             </div>
             <p className="mt-3 max-w-3xl leading-7" style={{ color: "var(--text-secondary)" }}>
@@ -29,7 +30,7 @@ export default async function AdminClientesPage() {
           </div>
 
           <div className="p-4" style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}>
-            <p className="text-xs font-black uppercase tracking-[0.18em]" style={{ color: "var(--text-muted)" }}>
+            <p className="font-mono-tech text-xs" style={{ color: "var(--text-muted)" }}>
               Top scoring
             </p>
             <div className="mt-4 grid gap-3">

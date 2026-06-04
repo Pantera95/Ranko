@@ -6,6 +6,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { generateInvoiceNumber } from "@/lib/quotes";
 import { esRolEquipo } from "@/lib/roles";
+import { checkStockAvailability, deductStockForSale } from "@/lib/stock-deduction";
 
 const itemSchema = z.object({
   productoId: z.string().min(1),
@@ -59,6 +60,15 @@ export async function POST(request: Request) {
     const numero = await generateInvoiceNumber();
 
     const factura = await prisma.$transaction(async (tx) => {
+      // Validate inventory coverage before committing to anything
+      const shortages = await checkStockAvailability(
+        tx,
+        items.map((i) => ({ productoId: i.productoId, cantidad: i.cantidad })),
+      );
+      if (shortages.length > 0) {
+        throw Object.assign(new Error("insufficient_stock"), { shortages });
+      }
+
       const fac = await tx.factura.create({
         data: {
           numero,
@@ -85,6 +95,12 @@ export async function POST(request: Request) {
         select: { id: true, numero: true },
       });
 
+      // Deduct stock from inventory after the factura+items rows exist
+      await deductStockForSale(
+        tx,
+        items.map((i) => ({ productoId: i.productoId, cantidad: i.cantidad })),
+      );
+
       const firma = createHash("sha256")
         .update(`${session!.user!.id}:CREAR_FACTURA:${fac.id}:${Date.now()}`)
         .digest("hex");
@@ -105,7 +121,14 @@ export async function POST(request: Request) {
     });
 
     return Response.json({ ok: true, factura }, { status: 201 });
-  } catch {
+  } catch (err: unknown) {
+    if (err instanceof Error && err.message === "insufficient_stock") {
+      const shortages = (err as Error & { shortages?: unknown }).shortages ?? [];
+      return Response.json(
+        { ok: false, error: "Stock insuficiente para uno o más productos", shortages },
+        { status: 422 },
+      );
+    }
     return Response.json({ ok: false, error: "No se pudo crear la factura" }, { status: 503 });
   }
 }

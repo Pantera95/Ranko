@@ -65,7 +65,11 @@ export async function POST(request: Request) {
     }
 
     const esAnomalo = anomalias.length > 0;
-    const estadoPago = esAnomalo ? "PENDIENTE_VERIFICACION" : "PENDIENTE_VERIFICACION";
+    // Anomalous payments enter the verification queue; clean payments auto-confirm
+    // (the factura balance is pre-applied below in the non-anomaly branch).
+    const estadoPago: "PENDIENTE_VERIFICACION" | "CONFIRMADO" = esAnomalo
+      ? "PENDIENTE_VERIFICACION"
+      : "CONFIRMADO";
 
     // ─── Create pago + update factura ────────────────────────────────────────
     const result = await prisma.$transaction(async (tx) => {

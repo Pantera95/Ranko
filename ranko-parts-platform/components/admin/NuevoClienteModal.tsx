@@ -149,7 +149,7 @@ export function NuevoClienteModal() {
             <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: "var(--color-gold)" }}>
               CRM
             </p>
-            <h2 className="mt-0.5 text-xl font-black uppercase">Nuevo cliente</h2>
+            <h2 className="mt-0.5 font-display-kinetic text-xl uppercase">Nuevo cliente</h2>
           </div>
           <button onClick={close} type="button" className="p-1 transition hover:opacity-60">
             <X size={18} style={{ color: "var(--text-muted)" }} />

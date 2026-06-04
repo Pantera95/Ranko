@@ -44,10 +44,10 @@ export default async function AdminAutomatizacionPage() {
         {/* Header */}
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-sm font-bold uppercase tracking-[0.18em] text-[var(--color-gold)]">
+            <p className="font-mono-tech text-xs text-[var(--color-gold)]">
               Omnicanal
             </p>
-            <h1 className="mt-2 text-4xl font-black uppercase">Automatización</h1>
+            <h1 className="mt-2 font-display-kinetic--tight text-3xl uppercase leading-tight sm:text-4xl">Automatización</h1>
             <p className="mt-2 max-w-2xl text-sm leading-6" style={{ color: "var(--text-muted)" }}>
               Secuencias automáticas de WhatsApp y Email para leads, cotizaciones,
               facturas vencidas y recompra programada.

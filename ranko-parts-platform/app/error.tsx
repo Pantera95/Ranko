@@ -17,22 +17,36 @@ export default function GlobalError({ error, reset }: Props) {
 
   return (
     <main
-      className="grid min-h-screen place-items-center px-6"
+      className="relative grid min-h-screen place-items-center overflow-hidden px-6"
       style={{ background: "var(--bg-base)", color: "var(--text-primary)" }}
     >
-      <div className="text-center">
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 bg-[linear-gradient(90deg,rgba(245,197,24,0.05)_1px,transparent_1px),linear-gradient(rgba(245,197,24,0.05)_1px,transparent_1px)] bg-[size:48px_48px]"
+      />
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(220,38,38,0.10),transparent_55%)]"
+      />
+
+      <div className="relative text-center">
         <div
           className="mx-auto flex size-16 items-center justify-center"
           style={{ background: "var(--bg-elevated)", border: "1px solid var(--color-danger)" }}
         >
           <AlertTriangle size={28} style={{ color: "var(--color-danger)" }} />
         </div>
-        <h1 className="mt-6 text-3xl font-black uppercase">Algo salió mal</h1>
-        <p className="mt-3 max-w-md text-sm leading-6" style={{ color: "var(--text-secondary)" }}>
+        <p className="font-mono-tech mt-6 text-xs" style={{ color: "var(--color-danger)" }}>
+          Error inesperado
+        </p>
+        <h1 className="font-display-kinetic--tight mt-3 text-3xl uppercase leading-tight sm:text-4xl">
+          Algo salió mal
+        </h1>
+        <p className="mx-auto mt-4 max-w-md text-sm leading-6" style={{ color: "var(--text-secondary)" }}>
           Ocurrió un error inesperado. Puedes intentar recargar la página o volver al inicio.
         </p>
         {error.digest && (
-          <p className="mt-2 font-mono text-xs" style={{ color: "var(--text-muted)" }}>
+          <p className="font-mono-tech mt-3 text-xs" style={{ color: "var(--text-muted)" }}>
             Error ID: {error.digest}
           </p>
         )}
@@ -40,14 +54,15 @@ export default function GlobalError({ error, reset }: Props) {
           <button
             type="button"
             onClick={reset}
-            className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-black uppercase text-black transition hover:opacity-90"
+            className="group inline-flex h-12 items-center justify-center gap-2 rounded-sm px-6 text-sm font-black uppercase tracking-wider text-black shadow-[0_8px_24px_-8px_rgba(245,197,24,0.5)] transition-all hover:shadow-[0_12px_32px_-8px_rgba(245,197,24,0.8)]"
             style={{ background: "var(--color-gold)" }}
           >
-            <RefreshCw size={14} /> Reintentar
+            <RefreshCw size={14} className="transition-transform group-hover:rotate-180" />
+            Reintentar
           </button>
           <Link
             href="/"
-            className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-black uppercase transition hover:opacity-80"
+            className="inline-flex h-12 items-center justify-center gap-2 rounded-sm px-6 text-sm font-black uppercase tracking-wider transition hover:border-[var(--color-gold)] hover:text-[var(--color-gold)]"
             style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}
           >
             Ir al inicio

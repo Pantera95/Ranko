@@ -31,6 +31,7 @@ export type CustomerRow = {
   totalFacturas: number;
   bloqueado: boolean;
   activo: boolean;
+  portalActivo: boolean;
   createdAt: string;
 };
 
@@ -69,6 +70,7 @@ const fallbackClientes: CustomerRow[] = [
     totalFacturas: 7,
     bloqueado: false,
     activo: true,
+    portalActivo: false,
     createdAt: "2026-01-15",
   },
   {
@@ -92,6 +94,7 @@ const fallbackClientes: CustomerRow[] = [
     totalFacturas: 14,
     bloqueado: false,
     activo: true,
+    portalActivo: false,
     createdAt: "2025-11-03",
   },
   {
@@ -117,6 +120,7 @@ const fallbackClientes: CustomerRow[] = [
     totalFacturas: 2,
     bloqueado: false,
     activo: true,
+    portalActivo: false,
     createdAt: "2026-03-20",
   },
 ];
@@ -128,6 +132,7 @@ export async function getCustomersData(): Promise<CustomersData> {
       take: 200,
       include: {
         usuarioAsignado: { select: { nombre: true } },
+        usuarioPortal: { select: { activo: true } },
         vehiculos: { select: { id: true, marca: true, modelo: true, anio: true }, take: 5 },
         _count: { select: { leads: true, facturas: true } },
       },
@@ -154,6 +159,7 @@ export async function getCustomersData(): Promise<CustomersData> {
       totalFacturas: c._count.facturas,
       bloqueado: c.bloqueado,
       activo: c.activo,
+      portalActivo: c.usuarioPortal?.activo ?? false,
       createdAt: c.createdAt.toISOString().slice(0, 10),
     }));
 

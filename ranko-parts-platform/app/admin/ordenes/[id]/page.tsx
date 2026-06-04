@@ -5,7 +5,6 @@ import {
   MapPin,
   Package,
   Receipt,
-  Truck,
   User,
   XCircle,
 } from "lucide-react";
@@ -197,7 +196,7 @@ export default async function OrdenDetailPage({ params }: Props) {
             className="mt-4 p-6"
             style={{ border: "1px solid var(--border)", background: "var(--bg-card)" }}
           >
-            <p className="text-xs font-black uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+            <p className="font-mono-tech text-xs" style={{ color: "var(--text-muted)" }}>
               Estado del pedido
             </p>
             <div className="mt-6 flex items-start gap-0">
@@ -286,7 +285,7 @@ export default async function OrdenDetailPage({ params }: Props) {
               style={{ borderBottom: "1px solid var(--border)", background: "var(--bg-elevated)" }}
             >
               <Clock size={13} style={{ color: "var(--color-gold)" }} />
-              <p className="text-xs font-black uppercase tracking-widest" style={{ color: "var(--text-primary)" }}>
+              <p className="font-mono-tech text-xs" style={{ color: "var(--text-primary)" }}>
                 Historial de estados
               </p>
             </div>

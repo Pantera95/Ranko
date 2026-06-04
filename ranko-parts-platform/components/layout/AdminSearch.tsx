@@ -1,9 +1,11 @@
 "use client";
 
-import { Command, Search, X } from "lucide-react";
+import { Command, Loader2, Search, X } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+
+import type { SearchResultItem } from "@/app/api/admin/search/route";
 
 type Result = {
   group: string;
@@ -59,16 +61,53 @@ export function AdminSearch() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [activeIdx, setActiveIdx] = useState(-1);
+  const [liveResults, setLiveResults] = useState<Result[]>([]);
+  const [liveLoading, setLiveLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Computed early so it can be captured correctly by the keyboard effect
-  const filtered = query.trim()
+  // Debounced live search against the DB
+  const fetchLive = useCallback(async (q: string) => {
+    if (q.length < 2) { setLiveResults([]); return; }
+    setLiveLoading(true);
+    try {
+      const res = await fetch(`/api/admin/search?q=${encodeURIComponent(q)}`);
+      if (!res.ok) throw new Error("search failed");
+      const data = (await res.json()) as { results: SearchResultItem[] };
+      setLiveResults(data.results.map((r) => ({
+        group: r.group,
+        label: r.label,
+        sub: r.sub,
+        href: r.href,
+      })));
+    } catch {
+      setLiveResults([]);
+    } finally {
+      setLiveLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (query.length < 2) { setLiveResults([]); setLiveLoading(false); return; }
+    setLiveLoading(true);
+    debounceRef.current = setTimeout(() => fetchLive(query), 300);
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, [query, fetchLive]);
+
+  // Merge: live DB results first, then matching static nav entries (deduplicated by href)
+  const staticFiltered = query.trim()
     ? STATIC_RESULTS.filter((r) =>
         [r.label, r.group, r.sub ?? ""].join(" ").toLowerCase().includes(query.toLowerCase()),
       )
     : STATIC_RESULTS.slice(0, 8);
+
+  const liveHrefs = new Set(liveResults.map((r) => r.href));
+  const filtered: Result[] = query.length >= 2
+    ? [...liveResults, ...staticFiltered.filter((r) => !liveHrefs.has(r.href))]
+    : staticFiltered;
 
   // Keyboard shortcut ⌘K / Ctrl+K + arrow nav
   useEffect(() => {
@@ -107,6 +146,8 @@ export function AdminSearch() {
     } else {
       setQuery("");
       setActiveIdx(-1);
+      setLiveResults([]);
+      setLiveLoading(false);
     }
   }, [open]);
 
@@ -151,7 +192,7 @@ export function AdminSearch() {
         }}
       >
         <Search size={15} />
-        <span className="flex-1 text-left">Buscar secciones, clientes, SKUs…</span>
+        <span className="flex-1 text-left">Buscar clientes, productos, cotizaciones…</span>
         <kbd
           className="hidden items-center gap-0.5 rounded px-1.5 py-0.5 font-mono text-[10px] sm:inline-flex"
           style={{ background: "var(--bg-elevated)", color: "var(--text-muted)", border: "1px solid var(--border)" }}
@@ -182,12 +223,15 @@ export function AdminSearch() {
                 className="flex items-center gap-3 px-4 py-3"
                 style={{ borderBottom: "1px solid var(--border)" }}
               >
-                <Search size={16} style={{ color: "var(--text-muted)" }} />
+                {liveLoading
+                  ? <Loader2 size={16} className="animate-spin shrink-0" style={{ color: "var(--color-gold)" }} />
+                  : <Search size={16} style={{ color: "var(--text-muted)" }} />
+                }
                 <input
                   ref={inputRef}
                   className="flex-1 bg-transparent text-sm outline-none placeholder:text-[var(--text-muted)]"
                   style={{ color: "var(--text-primary)" }}
-                  placeholder="Buscar secciones, clientes, SKUs…"
+                  placeholder="Buscar clientes, productos, cotizaciones…"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                 />

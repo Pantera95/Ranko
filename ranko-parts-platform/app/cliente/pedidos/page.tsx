@@ -44,10 +44,10 @@ export default async function ClientePedidosPage() {
   return (
     <main className="p-4 sm:p-6" style={{ color: "var(--text-primary)" }}>
       <section className="mx-auto max-w-4xl">
-        <p className="text-sm font-bold uppercase tracking-[0.18em]" style={{ color: "var(--color-gold)" }}>
+        <p className="font-mono-tech text-xs" style={{ color: "var(--color-gold)" }}>
           Portal del cliente
         </p>
-        <h1 className="mt-2 text-4xl font-black uppercase">Mis pedidos</h1>
+        <h1 className="mt-2 font-display-kinetic--tight text-3xl uppercase leading-tight sm:text-4xl">Mis pedidos</h1>
         <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
           Sigue el estado de tus despachos en tiempo real.
         </p>
@@ -90,7 +90,7 @@ export default async function ClientePedidosPage() {
         {/* Pedidos activos */}
         {activos.length > 0 ? (
           <section className="mt-8">
-            <h2 className="text-xs font-black uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+            <h2 className="font-mono-tech text-xs" style={{ color: "var(--text-muted)" }}>
               En curso
             </h2>
             <div className="mt-3 grid gap-3">
@@ -158,7 +158,7 @@ export default async function ClientePedidosPage() {
         {/* Historial */}
         {historial.length > 0 ? (
           <section className="mt-10">
-            <h2 className="text-xs font-black uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+            <h2 className="font-mono-tech text-xs" style={{ color: "var(--text-muted)" }}>
               Historial
             </h2>
             <div

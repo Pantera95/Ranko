@@ -52,11 +52,12 @@ export default async function OrdenPage({ params }: OrdenPageProps) {
       <WhatsAppFloating />
 
       <section className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
-        <p className="text-sm font-bold uppercase tracking-[0.18em] text-[var(--color-gold-muted)]">
-          Tracking publico
+        <p className="font-mono-tech inline-flex items-center gap-2 text-xs" style={{ color: "var(--color-gold)" }}>
+          <span className="block h-px w-6" style={{ background: "var(--color-gold)" }} />
+          Tracking público
         </p>
-        <h1 className="mt-2 text-4xl font-black uppercase sm:text-5xl">
-          Orden {codigo}
+        <h1 className="font-display-kinetic--tight mt-3 text-3xl uppercase leading-tight sm:text-4xl">
+          Orden <span className="font-mono" style={{ color: "var(--color-gold)" }}>{codigo}</span>
         </h1>
 
         {!data.found ? (
@@ -223,7 +224,7 @@ export default async function OrdenPage({ params }: OrdenPageProps) {
             {data.items.length > 0 ? (
               <div className="mt-10">
                 <p
-                  className="text-xs font-black uppercase tracking-[0.18em]"
+                  className="font-mono-tech text-xs"
                   style={{ color: "var(--text-muted)" }}
                 >
                   Productos en esta orden
