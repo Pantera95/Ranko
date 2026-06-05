@@ -1,9 +1,8 @@
 "use client";
 
-import { signIn } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -12,44 +11,61 @@ type LoginFormProps = {
 };
 
 export function LoginForm({ tipo }: LoginFormProps) {
-  const router = useRouter();
   const searchParams = useSearchParams();
+  const urlError = searchParams.get("error");
+
+  const [csrfToken, setCsrfToken] = useState<string>("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState(
+    urlError
+      ? "Credenciales inválidas. Verifica email y contraseña (distinguen mayúsculas y minúsculas)."
+      : "",
+  );
   const [isLoading, setIsLoading] = useState(false);
 
-  async function onSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setError("");
-    setIsLoading(true);
+  // Fetch CSRF token from NextAuth so the native POST is accepted.
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/auth/csrf")
+      .then((r) => r.json())
+      .then((d) => {
+        if (!cancelled) setCsrfToken(d.csrfToken ?? "");
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
-    const result = await signIn("credentials", {
-      email: email.trim().toLowerCase(),
-      password,
-      redirect: false,
-    });
-
-    setIsLoading(false);
-
-    if (result?.error) {
-      setError(
-        "Credenciales inválidas. Verifica email y contraseña (las contraseñas distinguen mayúsculas y minúsculas).",
-      );
+  function onSubmit(event: FormEvent<HTMLFormElement>) {
+    // Pre-flight validation — if missing CSRF or fields, block submit and
+    // surface an error instead of letting the request hang.
+    if (!csrfToken) {
+      event.preventDefault();
+      setError("Cargando token de seguridad… Intenta de nuevo en un segundo.");
       return;
     }
-
-    const fallback = tipo === "cliente" ? "/cliente" : "/admin";
-    const callbackUrl = searchParams.get("callbackUrl");
-    const destination =
-      callbackUrl && callbackUrl.startsWith(tipo === "cliente" ? "/cliente" : "/admin")
-        ? callbackUrl
-        : fallback;
-
-    router.push(destination);
-    router.refresh();
+    if (!email.trim() || !password) {
+      event.preventDefault();
+      setError("Completa email y contraseña.");
+      return;
+    }
+    setError("");
+    setIsLoading(true);
+    // DO NOT preventDefault — let the native form do a real POST to
+    // /api/auth/callback/credentials. NextAuth will set the session cookie
+    // and 302 redirect to callbackUrl. This bypasses the iOS Safari hang
+    // bug with Auth.js v5 beta's signIn() client helper.
   }
+
+  const callbackUrl = tipo === "cliente" ? "/cliente" : "/admin";
+
+  const demoCredentials =
+    tipo === "cliente"
+      ? { email: "cliente@rankoparts.com", password: "RankoCliente2026!" }
+      : { email: "admin@rankoparts.com", password: "RankoAdmin2026!" };
 
   const inputStyle: React.CSSProperties = {
     border: "1px solid var(--border)",
@@ -57,26 +73,28 @@ export function LoginForm({ tipo }: LoginFormProps) {
     color: "var(--text-primary)",
   };
 
-  // Demo credentials shown inline so anyone can test the platform without
-  // hunting for them in the docs. Hidden via DISABLE_DEMO_LOGIN env on real
-  // production. We always render the hint — the actual auth check on the
-  // server is what decides whether the credentials are honored.
-  const demoCredentials =
-    tipo === "cliente"
-      ? { email: "cliente@rankoparts.com", password: "RankoCliente2026!" }
-      : { email: "admin@rankoparts.com", password: "RankoAdmin2026!" };
-
   return (
-    <form onSubmit={onSubmit} className="grid gap-4" noValidate>
+    <form
+      action="/api/auth/callback/credentials"
+      method="post"
+      onSubmit={onSubmit}
+      className="grid gap-4"
+      noValidate
+    >
+      {/* NextAuth-required hidden fields */}
+      <input type="hidden" name="csrfToken" value={csrfToken} />
+      <input type="hidden" name="callbackUrl" value={callbackUrl} />
+
       <label className="grid gap-2 text-sm font-bold" style={{ color: "var(--text-secondary)" }}>
         Email
         <input
+          name="email"
           autoCapitalize="none"
           autoComplete="email"
           autoCorrect="off"
           className="h-12 rounded-sm px-3 outline-none transition"
           inputMode="email"
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => setEmail(e.target.value.toLowerCase())}
           placeholder="tu@correo.com"
           required
           spellCheck={false}
@@ -89,6 +107,7 @@ export function LoginForm({ tipo }: LoginFormProps) {
         Contraseña
         <div className="relative">
           <input
+            name="password"
             autoCapitalize="none"
             autoComplete="current-password"
             autoCorrect="off"
@@ -135,7 +154,7 @@ export function LoginForm({ tipo }: LoginFormProps) {
           "group inline-flex h-12 items-center justify-center gap-2 rounded-sm px-4 text-sm font-black uppercase tracking-wider text-black shadow-[0_8px_24px_-8px_rgba(245,197,24,0.5)] transition-all hover:shadow-[0_12px_32px_-8px_rgba(245,197,24,0.8)]",
           isLoading && "cursor-wait opacity-70",
         )}
-        disabled={isLoading}
+        disabled={isLoading || !csrfToken}
         style={{ background: "var(--color-gold)" }}
         type="submit"
       >
