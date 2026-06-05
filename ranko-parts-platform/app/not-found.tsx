@@ -27,7 +27,7 @@ export default function NotFound() {
 
         {/* 404 mega — Syncopate */}
         <p
-          className="font-display-kinetic--tight mt-4 text-[10rem] leading-none sm:text-[14rem]"
+          className="font-display-kinetic--tight mt-4 text-[6rem] leading-none tracking-normal sm:text-[10rem] md:text-[14rem]"
           style={{ color: "var(--color-gold)" }}
         >
           404

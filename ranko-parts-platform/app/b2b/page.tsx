@@ -32,7 +32,7 @@ export default function B2BPage() {
               <span className="block h-px w-6" style={{ background: "var(--color-gold)" }} />
               <Wrench size={12} /> Ranko Parts B2B
             </p>
-            <h1 className="font-display-kinetic--tight mt-4 max-w-3xl text-4xl uppercase leading-[1.05] sm:text-5xl lg:text-6xl">
+            <h1 className="font-display-kinetic--tight mt-4 max-w-3xl break-words text-3xl uppercase leading-[1.05] tracking-normal sm:text-4xl md:text-5xl lg:text-6xl">
               Suministro serio para talleres y distribuidores.
             </h1>
             <p className="mt-6 max-w-2xl leading-8" style={{ color: "var(--text-secondary)" }}>

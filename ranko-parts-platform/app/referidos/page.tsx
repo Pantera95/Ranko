@@ -39,7 +39,7 @@ export default function ReferidosPage() {
           >
             <Star size={12} /> Programa de referidos
           </div>
-          <h1 className="font-display-kinetic--tight mt-5 text-5xl uppercase leading-[1.02] sm:text-6xl lg:text-7xl">
+          <h1 className="font-display-kinetic--tight mt-5 break-words text-4xl uppercase leading-[1.02] tracking-normal sm:text-5xl md:text-6xl lg:text-7xl">
             Refiere y <span style={{ color: "var(--color-gold)" }}>gana.</span>
           </h1>
           <p className="mt-6 max-w-3xl text-xl font-semibold leading-9" style={{ color: "var(--text-secondary)" }}>

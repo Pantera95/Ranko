@@ -117,6 +117,9 @@ body {
   color: var(--text-primary);
   font-family: var(--font-body);
   transition: background-color 0.2s ease, color 0.2s ease;
+  /* Prevents accidental horizontal scroll on mobile when a heading or wide
+     decorative element exceeds the viewport. */
+  overflow-x: hidden;
 }
 
 a {
@@ -136,13 +139,21 @@ a {
    is critical because Syncopate's wide-stance characters need air to breathe. */
 .font-display-kinetic {
   font-family: var(--font-display);
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
   font-weight: 700;
+}
+@media (min-width: 640px) {
+  .font-display-kinetic { letter-spacing: 0.04em; }
 }
 .font-display-kinetic--tight {
   font-family: var(--font-display);
-  letter-spacing: 0.02em;
+  letter-spacing: 0;
   font-weight: 700;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+@media (min-width: 640px) {
+  .font-display-kinetic--tight { letter-spacing: 0.02em; }
 }
 .font-mono-tech {
   font-family: var(--font-mono);

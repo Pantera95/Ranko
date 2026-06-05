@@ -63,7 +63,7 @@ export default async function Home() {
             <p className="inline-flex items-center gap-2 rounded-sm border border-[var(--color-gold)] bg-black/40 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.18em] text-[var(--color-gold)] backdrop-blur-sm">
               <Mountain size={12} /> Caracas & Lechería · Envíos a toda Venezuela
             </p>
-            <h1 className="font-display-kinetic--tight mt-6 max-w-4xl text-5xl uppercase leading-[0.95] text-white sm:text-6xl lg:text-[6.5rem]">
+            <h1 className="font-display-kinetic--tight mt-6 max-w-4xl break-words text-[2.25rem] uppercase leading-[0.95] tracking-normal text-white sm:text-5xl md:text-6xl lg:text-7xl xl:text-[6.5rem]">
               Repuestos que <br />
               <span className="bg-gradient-to-r from-[var(--color-gold)] via-[#f5d34c] to-[var(--color-gold)] bg-clip-text text-transparent">
                 no fallan.
