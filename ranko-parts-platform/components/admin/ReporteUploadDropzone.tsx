@@ -1,8 +1,18 @@
 "use client";
 
-import { FileSpreadsheet, FileText, Loader2, Upload, X } from "lucide-react";
+import { Check, Copy, FileSpreadsheet, FileText, Loader2, Upload, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, type DragEvent } from "react";
+
+type ErrorDetail = {
+  status: number;
+  statusText: string;
+  responseBody: string;
+  responseHeaders: Record<string, string>;
+  request: { url: string; method: string; tipo: string; fileName: string; fileSize: number };
+  clientError?: string;
+  timestamp: string;
+};
 
 const TIPOS = [
   { value: "VENTAS", label: "Ventas", icon: FileSpreadsheet, hint: "XLS/XLSX exportado del ERP" },
@@ -25,12 +35,28 @@ export function ReporteUploadDropzone() {
   const [dragOver, setDragOver] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [errorDetail, setErrorDetail] = useState<ErrorDetail | null>(null);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
 
   function reset() {
     setFile(null);
     setError(null);
+    setErrorDetail(null);
     setSuccess(null);
+  }
+
+  async function copyErrorToClipboard() {
+    if (!errorDetail) return;
+    const text = JSON.stringify(errorDetail, null, 2);
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // ignore
+    }
   }
 
   function onFile(f: File | null | undefined) {
@@ -59,24 +85,71 @@ export function ReporteUploadDropzone() {
     if (!file) return;
     setUploading(true);
     setError(null);
+    setErrorDetail(null);
     setSuccess(null);
 
     const fd = new FormData();
     fd.append("file", file);
     fd.append("tipo", tipo);
 
+    const url = "/api/admin/reportes/upload";
+    const requestInfo = {
+      url,
+      method: "POST",
+      tipo,
+      fileName: file.name,
+      fileSize: file.size,
+    };
+
+    let res: Response | null = null;
+    let bodyText = "";
+
     try {
-      const res = await fetch("/api/admin/reportes/upload", { method: "POST", body: fd });
-      const json = await res.json();
+      res = await fetch(url, { method: "POST", body: fd });
+
+      // Capturamos el body como texto SIEMPRE, antes de intentar parsear JSON,
+      // así si el server devuelve HTML/texto plano de error (típico de timeouts
+      // o crashes de Vercel) lo podamos mostrar igual.
+      bodyText = await res.text();
+
+      let json: { ok?: boolean; error?: string; resumen?: string } = {};
+      try {
+        json = JSON.parse(bodyText) as typeof json;
+      } catch {
+        // body no es JSON — guardamos el texto crudo en errorDetail abajo
+      }
+
       if (!res.ok || !json.ok) {
-        setError(json.error ?? "Error al procesar el archivo");
+        const headersObj: Record<string, string> = {};
+        res.headers.forEach((v, k) => {
+          headersObj[k] = v;
+        });
+        setError(json.error ?? `HTTP ${res.status} ${res.statusText}`);
+        setErrorDetail({
+          status: res.status,
+          statusText: res.statusText,
+          responseBody: bodyText.slice(0, 8000),
+          responseHeaders: headersObj,
+          request: requestInfo,
+          timestamp: new Date().toISOString(),
+        });
         return;
       }
       setSuccess(json.resumen ?? "Reporte procesado correctamente.");
       setFile(null);
       router.refresh();
-    } catch {
-      setError("Error de conexión. Intenta de nuevo.");
+    } catch (err) {
+      const clientError = err instanceof Error ? `${err.name}: ${err.message}\n${err.stack ?? ""}` : String(err);
+      setError("Error de conexión — abrí 'Ver detalles' para el log completo");
+      setErrorDetail({
+        status: res?.status ?? 0,
+        statusText: res?.statusText ?? "Network error / fetch threw",
+        responseBody: bodyText.slice(0, 8000),
+        responseHeaders: {},
+        request: requestInfo,
+        clientError,
+        timestamp: new Date().toISOString(),
+      });
     } finally {
       setUploading(false);
     }
@@ -189,15 +262,31 @@ export function ReporteUploadDropzone() {
         {error && (
           <div
             role="alert"
-            className="flex items-start gap-2 px-3 py-2 text-sm font-bold"
+            className="flex items-start justify-between gap-3 px-3 py-2 text-sm font-bold"
             style={{
               border: "1px solid var(--color-danger)",
               background: "color-mix(in srgb, var(--color-danger) 8%, transparent)",
               color: "var(--color-danger)",
             }}
           >
-            <span aria-hidden="true">⚠</span>
-            <span>{error}</span>
+            <div className="flex items-start gap-2 min-w-0">
+              <span aria-hidden="true">⚠</span>
+              <span className="break-words">{error}</span>
+            </div>
+            {errorDetail && (
+              <button
+                type="button"
+                onClick={() => setShowErrorModal(true)}
+                className="shrink-0 rounded-sm px-2 py-1 text-[10px] font-black uppercase"
+                style={{
+                  border: "1px solid var(--color-danger)",
+                  color: "var(--color-danger)",
+                  background: "transparent",
+                }}
+              >
+                Ver detalles
+              </button>
+            )}
           </div>
         )}
         {success && (
@@ -236,6 +325,149 @@ export function ReporteUploadDropzone() {
           </div>
         )}
       </div>
+
+      {/* ───────────── Modal de error ───────────── */}
+      {showErrorModal && errorDetail && (
+        <div
+          className="fixed inset-0 z-50 grid place-items-center p-4"
+          style={{ background: "color-mix(in srgb, #000 75%, transparent)" }}
+          onClick={() => setShowErrorModal(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col"
+            style={{
+              background: "var(--bg-card)",
+              border: "1px solid var(--color-danger)",
+              boxShadow: "0 24px 64px -16px rgba(0,0,0,0.7)",
+            }}
+          >
+            {/* Header */}
+            <div
+              className="flex items-center justify-between gap-2 px-5 py-3 shrink-0"
+              style={{
+                background: "color-mix(in srgb, var(--color-danger) 10%, var(--bg-elevated))",
+                borderBottom: "1px solid var(--color-danger)",
+              }}
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <span style={{ color: "var(--color-danger)" }}>⚠</span>
+                <div className="min-w-0">
+                  <p className="font-mono-tech text-xs" style={{ color: "var(--color-danger)" }}>
+                    Log del error
+                  </p>
+                  <p className="font-mono text-[10px] truncate" style={{ color: "var(--text-muted)" }}>
+                    {errorDetail.timestamp} · HTTP {errorDetail.status || "—"} {errorDetail.statusText}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1 shrink-0">
+                <button
+                  type="button"
+                  onClick={copyErrorToClipboard}
+                  className="inline-flex items-center gap-1 rounded-sm px-2 py-1 text-[10px] font-black uppercase"
+                  style={{
+                    border: "1px solid var(--color-gold)",
+                    color: copied ? "var(--color-success)" : "var(--color-gold)",
+                  }}
+                >
+                  {copied ? <Check size={11} /> : <Copy size={11} />}
+                  {copied ? "Copiado" : "Copiar JSON"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowErrorModal(false)}
+                  className="rounded-sm p-1.5"
+                  style={{ color: "var(--text-muted)" }}
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            </div>
+
+            {/* Body */}
+            <div className="overflow-auto p-5 grid gap-4">
+              <Section title="Request">
+                <Kv k="URL" v={errorDetail.request.url} />
+                <Kv k="Método" v={errorDetail.request.method} />
+                <Kv k="Tipo" v={errorDetail.request.tipo} />
+                <Kv k="Archivo" v={errorDetail.request.fileName} />
+                <Kv k="Tamaño" v={`${(errorDetail.request.fileSize / 1024).toFixed(1)} KB`} />
+              </Section>
+
+              <Section title={`Response · HTTP ${errorDetail.status || "—"}`}>
+                <Kv k="Status text" v={errorDetail.statusText || "—"} />
+                {Object.keys(errorDetail.responseHeaders).length > 0 && (
+                  <details className="mt-2">
+                    <summary className="cursor-pointer text-[10px] font-bold uppercase" style={{ color: "var(--text-muted)" }}>
+                      Headers ({Object.keys(errorDetail.responseHeaders).length})
+                    </summary>
+                    <pre
+                      className="mt-2 overflow-auto p-3 font-mono text-[10px] leading-5"
+                      style={{ background: "var(--bg-elevated)", border: "1px solid var(--border-subtle)", color: "var(--text-secondary)" }}
+                    >
+                      {Object.entries(errorDetail.responseHeaders)
+                        .map(([k, v]) => `${k}: ${v}`)
+                        .join("\n")}
+                    </pre>
+                  </details>
+                )}
+              </Section>
+
+              <Section title="Response body (raw)">
+                <pre
+                  className="overflow-auto p-3 font-mono text-[11px] leading-5 max-h-[300px]"
+                  style={{ background: "var(--bg-elevated)", border: "1px solid var(--border-subtle)", color: "var(--text-primary)", whiteSpace: "pre-wrap", wordBreak: "break-word" }}
+                >
+                  {errorDetail.responseBody || "(vacío — el server no devolvió cuerpo)"}
+                </pre>
+              </Section>
+
+              {errorDetail.clientError && (
+                <Section title="Client error (fetch threw)">
+                  <pre
+                    className="overflow-auto p-3 font-mono text-[11px] leading-5 max-h-[200px]"
+                    style={{ background: "var(--bg-elevated)", border: "1px solid var(--color-danger)", color: "var(--color-danger)", whiteSpace: "pre-wrap" }}
+                  >
+                    {errorDetail.clientError}
+                  </pre>
+                </Section>
+              )}
+
+              <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>
+                Tip: hacé click en <b>Copiar JSON</b> y pegá el resultado en el chat — con eso puedo diagnosticar exactamente qué salió mal.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
+  );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <p
+        className="mb-2 font-mono-tech text-[10px]"
+        style={{ color: "var(--color-gold)", letterSpacing: "0.1em" }}
+      >
+        {title}
+      </p>
+      <div className="grid gap-1">{children}</div>
+    </div>
+  );
+}
+
+function Kv({ k, v }: { k: string; v: string }) {
+  return (
+    <div className="flex items-baseline gap-3 text-xs">
+      <span className="font-bold uppercase w-20 shrink-0" style={{ color: "var(--text-muted)" }}>
+        {k}
+      </span>
+      <span className="font-mono break-all" style={{ color: "var(--text-primary)" }}>
+        {v}
+      </span>
+    </div>
   );
 }
