@@ -24,6 +24,12 @@ import { parseVentasXLS } from "@/lib/parsers/ventas-xls";
 const MAX_BYTES = 10 * 1024 * 1024; // 10 MB
 const ALLOWED_EXT = [".xls", ".xlsx", ".docx", ".doc", ".pdf"] as const;
 
+// Parsing + 8-15 batches de insert pueden tomar 30-60s para archivos con
+// miles de filas. Sin esto Vercel mata la función a los 10s (default Hobby).
+export const maxDuration = 300; // 5 min máximo (límite Pro plan)
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 type TipoReporte = "VENTAS" | "GASTOS" | "ESTADO_FINANCIERO";
 type FormatoReporte = "XLS" | "XLSX" | "DOCX" | "DOC" | "PDF";
 
