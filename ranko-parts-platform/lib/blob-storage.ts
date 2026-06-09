@@ -30,6 +30,19 @@ export async function uploadReportBlob(
   const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
   const pathname = `reportes-bi/${options.tipo.toLowerCase()}/${options.uploaderId}/${Date.now()}-${safeName}`;
 
+  // Si Vercel Blob no está habilitado (no hay token), devolvemos un placeholder
+  // para que el upload siga funcionando — los datos parseados igual se importan
+  // a la BD. El archivo original simplemente no queda persistido en CDN.
+  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+    console.warn("[blob] BLOB_READ_WRITE_TOKEN ausente — omitiendo persistencia del archivo original");
+    return {
+      url: `placeholder://${pathname}`,
+      pathname,
+      contentType: file.type || "application/octet-stream",
+      size: file.size,
+    };
+  }
+
   const blob = await put(pathname, file, {
     access: "public",
     addRandomSuffix: true,
