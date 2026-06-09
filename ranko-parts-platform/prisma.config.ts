@@ -7,9 +7,10 @@ export default defineConfig({
     path: "prisma/migrations",
   },
   datasource: {
-    // db push / migrate necesitan conexión directa (no pgbouncer-pooled).
-    // En Supabase DIRECT_URL apunta al port 5432 sin pool. DATABASE_URL es
-    // el connection-pooled (6543) que usa la app en runtime.
-    url: process.env["DIRECT_URL"] ?? process.env["DATABASE_URL"] ?? "",
+    // db push / migrate prefieren conexión directa (DIRECT_URL en Supabase
+    // apunta al port 5432 sin pgbouncer). Si no está disponible, caemos a
+    // DATABASE_URL (puede ser pgbouncer-pooled — funciona para queries pero
+    // no soporta DDL transaccional en algunas versiones).
+    url: process.env["DIRECT_URL"] || process.env["DATABASE_URL"] || "",
   },
 });

@@ -93,17 +93,52 @@ export async function POST(request: Request) {
   }
 
   // ── 2. Crear ReporteUpload pending ─────────────────────────────────────────
-  const reporte = await prisma.reporteUpload.create({
-    data: {
-      tipo,
-      formato,
-      nombreArchivo: file.name,
-      archivoUrl: blob.url,
-      tamanoBytes: file.size,
-      estadoProceso: "PROCESANDO",
-      subidoPorId: session.user.id,
-    },
-  });
+  // Si las tablas BI no existen (porque `prisma db push` no corrió bien en
+  // el build de Vercel), auto-provisionamos con DDL crudo idempotente.
+  let reporte;
+  try {
+    reporte = await prisma.reporteUpload.create({
+      data: {
+        tipo,
+        formato,
+        nombreArchivo: file.name,
+        archivoUrl: blob.url,
+        tamanoBytes: file.size,
+        estadoProceso: "PROCESANDO",
+        subidoPorId: session.user.id,
+      },
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (/does not exist|relation .* does not exist|P2021/i.test(msg)) {
+      console.warn("[reportes/upload] tablas BI ausentes — auto-provisionando...");
+      const setupRes = await fetch(new URL("/api/admin/setup-bi", request.url), {
+        method: "POST",
+        headers: { cookie: request.headers.get("cookie") ?? "" },
+      });
+      if (!setupRes.ok) {
+        const setupBody = await setupRes.text();
+        return Response.json(
+          { ok: false, error: `No se pudieron crear las tablas BI: ${setupBody.slice(0, 200)}` },
+          { status: 500 },
+        );
+      }
+      // Reintentar después de provisionar
+      reporte = await prisma.reporteUpload.create({
+        data: {
+          tipo,
+          formato,
+          nombreArchivo: file.name,
+          archivoUrl: blob.url,
+          tamanoBytes: file.size,
+          estadoProceso: "PROCESANDO",
+          subidoPorId: session.user.id,
+        },
+      });
+    } else {
+      throw err;
+    }
+  }
 
   // ── 3-4. Parse + import ────────────────────────────────────────────────────
   try {
