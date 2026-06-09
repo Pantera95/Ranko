@@ -67,7 +67,15 @@ export async function POST(request: Request) {
   }
 }
 
+function logMem(label: string) {
+  if (typeof process === "undefined" || !process.memoryUsage) return;
+  const mb = (n: number) => `${(n / 1024 / 1024).toFixed(0)}MB`;
+  const u = process.memoryUsage();
+  console.log(`[upload/mem] ${label} rss=${mb(u.rss)} heap=${mb(u.heapUsed)}/${mb(u.heapTotal)} ext=${mb(u.external)}`);
+}
+
 async function handlePost(request: Request) {
+  logMem("start");
   const session = await auth();
   if (!esRolEquipo(session?.user?.rol)) {
     return Response.json({ ok: false, error: "No autorizado" }, { status: 401 });
@@ -198,10 +206,13 @@ async function handlePost(request: Request) {
 
   // ── 3-4. Parse + import ────────────────────────────────────────────────────
   try {
+    logMem("before-buffer");
     const buffer = Buffer.from(await file.arrayBuffer());
+    logMem(`after-buffer (file=${(file.size / 1024).toFixed(0)}KB)`);
 
     if (tipo === "VENTAS" && (formato === "XLS" || formato === "XLSX")) {
       const result = parseVentasXLS(buffer);
+      logMem(`after-parse (${result.ventas.length} rows)`);
       if (result.ventas.length === 0) {
         await prisma.reporteUpload.update({
           where: { id: reporte.id },
