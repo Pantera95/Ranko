@@ -44,6 +44,30 @@ function detectFormato(filename: string): FormatoReporte | null {
 }
 
 export async function POST(request: Request) {
+  try {
+    return await handlePost(request);
+  } catch (err) {
+    // Cualquier excepción no capturada arriba: devolver JSON con detalle
+    // en vez de body vacío + 500 (que produce el inútil "Error de conexión").
+    console.error("[reportes/upload] uncaught:", err);
+    const e = err as { message?: string; code?: string; meta?: unknown; name?: string };
+    return Response.json(
+      {
+        ok: false,
+        error: e.message ?? "Error desconocido",
+        code: e.code,
+        name: e.name,
+        meta: e.meta,
+        stack: process.env.NODE_ENV === "production"
+          ? undefined
+          : err instanceof Error ? err.stack : undefined,
+      },
+      { status: 500 },
+    );
+  }
+}
+
+async function handlePost(request: Request) {
   const session = await auth();
   if (!esRolEquipo(session?.user?.rol)) {
     return Response.json({ ok: false, error: "No autorizado" }, { status: 401 });
@@ -92,6 +116,38 @@ export async function POST(request: Request) {
     );
   }
 
+  // ── 1.5 Resolver subidoPorId ───────────────────────────────────────────────
+  // Si el usuario logueado es una cuenta demo (id "demo-*"), su ID no existe
+  // en la tabla Usuario y la FK fallaría. En ese caso usamos el primer
+  // MASTER_ADMIN/ADMIN real, o creamos uno "sistema" si no hay ninguno.
+  let subidoPorId = session.user.id;
+  if (subidoPorId.startsWith("demo-")) {
+    const realAdmin = await prisma.usuario.findFirst({
+      where: { rol: { in: ["MASTER_ADMIN", "ADMIN"] as never } },
+      select: { id: true },
+    }).catch(() => null);
+
+    if (realAdmin) {
+      subidoPorId = realAdmin.id;
+    } else {
+      // No hay admins reales — creamos uno de sistema (bcrypt hash de password
+      // imposible para que nadie pueda loguear como él).
+      const sys = await prisma.usuario.upsert({
+        where: { email: "sistema@ranko.internal" },
+        create: {
+          email: "sistema@ranko.internal",
+          nombre: "Sistema (importaciones BI)",
+          passwordHash: "$2a$10$IMPOSIBLE.LOGIN.DESDE.CUENTA.DEMO.NO.SE.PUEDE.AUTH",
+          rol: "MASTER_ADMIN",
+          activo: false,
+        },
+        update: {},
+        select: { id: true },
+      });
+      subidoPorId = sys.id;
+    }
+  }
+
   // ── 2. Crear ReporteUpload pending ─────────────────────────────────────────
   // Si las tablas BI no existen (porque `prisma db push` no corrió bien en
   // el build de Vercel), auto-provisionamos con DDL crudo idempotente.
@@ -105,7 +161,7 @@ export async function POST(request: Request) {
         archivoUrl: blob.url,
         tamanoBytes: file.size,
         estadoProceso: "PROCESANDO",
-        subidoPorId: session.user.id,
+        subidoPorId,
       },
     });
   } catch (err) {
@@ -132,7 +188,7 @@ export async function POST(request: Request) {
           archivoUrl: blob.url,
           tamanoBytes: file.size,
           estadoProceso: "PROCESANDO",
-          subidoPorId: session.user.id,
+          subidoPorId,
         },
       });
     } else {
